@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Praxis-Theorie-Verknüpfung – KAR-Modell</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:      #0D1117;
+      --surf:    #161B22;
+      --surf2:   #21262D;
+      --border:  rgba(255,255,255,0.08);
+      --border2: rgba(255,255,255,0.15);
+      --text-1:  #E6EDF3;
+      --text-2:  #8B949E;
+      --text-3:  #484F58;
+      --accent:  #5B8AF0;
+      --accent-d:rgba(91,138,240,0.1);
+      --green:   #22C55E;
+      --amber:   #F59E0B;
+      --radius:  10px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text-1);
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── HEADER ─────────────────────── */
+    .hdr {
+      background: linear-gradient(180deg, rgba(91,138,240,0.08) 0%, transparent 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 40px 0 36px;
+      text-align: center;
+    }
+    .hdr-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.74rem;
+      color: var(--text-2);
+      text-decoration: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      margin-bottom: 20px;
+      transition: all 0.15s;
+    }
+    .hdr-back:hover { color: var(--text-1); border-color: var(--border2); }
+    .hdr-eyebrow {
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+    .hdr h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      color: var(--text-1);
+      line-height: 1.2;
+      margin-bottom: 12px;
+    }
+    .hdr p {
+      font-size: 0.9rem;
+      color: var(--text-2);
+      max-width: 540px;
+      margin: 0 auto;
+    }
+
+    /* ── CONTENT ─────────────────────── */
+    .container {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+    }
+
+    /* ── TOC ──────────────────────────── */
+    .toc {
+      background: var(--surf);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      margin-bottom: 40px;
+    }
+    .toc-title {
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      margin-bottom: 12px;
+    }
+    .toc ol {
+      list-style: none;
+      counter-reset: toc;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px 24px;
+    }
+    .toc li {
+      counter-increment: toc;
+      font-size: 0.8rem;
+    }
+    .toc li::before {
+      content: counter(toc) ". ";
+      color: var(--text-3);
+      font-size: 0.72rem;
+    }
+    .toc a { color: var(--text-2); text-decoration: none; transition: color 0.12s; }
+    .toc a:hover { color: var(--accent); }
+
+    /* ── ACCORDION ───────────────────── */
+    .acc-item {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 10px;
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+    .acc-item.open { border-color: var(--border2); }
+
+    .acc-btn {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px 20px;
+      background: var(--surf);
+      border: none;
+      cursor: pointer;
+      text-align: left;
+      color: var(--text-1);
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 600;
+      transition: background 0.15s;
+    }
+    .acc-btn:hover { background: var(--surf2); }
+    .acc-item.open .acc-btn { background: var(--surf2); }
+
+    .acc-num {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      background: var(--accent-d);
+      border: 1px solid rgba(91,138,240,0.25);
+      color: var(--accent);
+      font-size: 0.65rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .acc-title { flex: 1; }
+    .acc-sub {
+      font-size: 0.68rem;
+      color: var(--text-3);
+      font-weight: 400;
+      display: block;
+      margin-top: 1px;
+    }
+    .acc-chevron {
+      color: var(--text-3);
+      transition: transform 0.2s;
+      flex-shrink: 0;
+    }
+    .acc-item.open .acc-chevron { transform: rotate(180deg); }
+
+    .acc-body {
+      display: none;
+      padding: 0 24px 24px;
+      background: var(--surf);
+    }
+    .acc-item.open .acc-body { display: block; }
+
+    /* ── TYPOGRAPHY IN BODY ──────────── */
+    .acc-body h3 {
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin: 22px 0 10px;
+      padding-top: 22px;
+      border-top: 1px solid var(--border);
+    }
+    .acc-body h3:first-child { border-top: none; margin-top: 8px; }
+
+    .acc-body p { font-size: 0.85rem; color: var(--text-2); margin-bottom: 12px; }
+    .acc-body p strong { color: var(--text-1); font-weight: 600; }
+
+    .acc-body ul, .acc-body ol {
+      font-size: 0.84rem;
+      color: var(--text-2);
+      padding-left: 1.4em;
+      margin-bottom: 12px;
+    }
+    .acc-body li { margin-bottom: 5px; }
+    .acc-body li strong { color: var(--text-1); }
+
+    /* Citation block */
+    .cite {
+      background: var(--surf2);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 6px 6px 0;
+      padding: 12px 16px;
+      margin: 14px 0;
+      font-size: 0.8rem;
+      color: var(--text-2);
+      font-style: italic;
+    }
+    .cite strong { color: var(--text-1); font-style: normal; font-weight: 600; }
+
+    /* Example box */
+    .example {
+      background: rgba(34,197,94,0.06);
+      border: 1px solid rgba(34,197,94,0.2);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      margin: 14px 0;
+      font-size: 0.83rem;
+      color: var(--text-2);
+    }
+    .example-label {
+      font-size: 0.63rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--green);
+      margin-bottom: 6px;
+    }
+
+    /* Warning/important box */
+    .important {
+      background: rgba(245,158,11,0.07);
+      border: 1px solid rgba(245,158,11,0.25);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      margin: 14px 0;
+      font-size: 0.83rem;
+      color: var(--text-2);
+    }
+    .important-label {
+      font-size: 0.63rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--amber);
+      margin-bottom: 6px;
+    }
+
+    /* Definition list */
+    .def-list { margin: 10px 0 14px; }
+    .def-item {
+      display: grid;
+      grid-template-columns: 180px 1fr;
+      gap: 8px 14px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.83rem;
+    }
+    .def-item:last-child { border-bottom: none; }
+    .def-term { color: var(--text-1); font-weight: 600; }
+    .def-desc { color: var(--text-2); }
+
+    /* Scale */
+    .scale-row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+      margin: 12px 0;
+    }
+    .scale-cell {
+      background: var(--surf2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 10px;
+      text-align: center;
+      font-size: 0.75rem;
+    }
+    .scale-cell .sc-val {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text-1);
+      display: block;
+    }
+    .scale-cell .sc-lab { color: var(--text-3); }
+
+    /* References */
+    .ref-list { list-style: none; padding: 0; }
+    .ref-list li {
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.8rem;
+      color: var(--text-2);
+      line-height: 1.6;
+    }
+    .ref-list li:last-child { border-bottom: none; }
+    .ref-list li strong { color: var(--accent); }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 24px;
+      font-size: 0.7rem;
+      color: var(--text-3);
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+
+<div class="hdr">
+  <div>
+    <a href="index.html" class="hdr-back">
+      ← Zurück zur KAR-App
+    </a>
+  </div>
+  <div class="hdr-eyebrow">Sport-Leistungskurs · Koordinationslehre</div>
+  <h1>Praxis-Theorie-Verknüpfung<br>KAR-Modell</h1>
+  <p>Wissenschaftliche Grundlagen des Koordinations-Anforderungs-Reglers nach Neumaier et al. – mit Quellenangaben und Sportpraxisbeispielen für den Leistungskurs Sport.</p>
+</div>
+
+<div class="container">
+
+  <!-- TOC -->
+  <div class="toc">
+    <div class="toc-title">Inhaltsübersicht</div>
+    <ol>
+      <li><a href="#s1">Einordnung & Entstehung des KAR-Modells</a></li>
+      <li><a href="#s2">Motorische Koordination – Grundbegriffe</a></li>
+      <li><a href="#s3">Die fünf Druckbedingungen</a></li>
+      <li><a href="#s4">Die sechs Informationsanforderungen</a></li>
+      <li><a href="#s5">Wechselwirkungen & Interdependenzen</a></li>
+      <li><a href="#s6">Anwendung: Sportartanalyse</a></li>
+      <li><a href="#s7">Koordinationstraining nach dem KAR-Modell</a></li>
+      <li><a href="#s8">Diagnostik & Anforderungsprofile</a></li>
+      <li><a href="#s9">Literaturverzeichnis</a></li>
+    </ol>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- 1 -->
+  <div class="acc-item" id="s1">
+    <button class="acc-btn" onclick="toggle(this)">
+      <span class="acc-num">1</span>
+      <span class="acc-title">
+        Einordnung und Entstehung des KAR-Modells
+        <span class="acc-sub">Sportwissenschaftliche Verortung · Neumaier (2009)</span>
+      </span>
+      <svg class="acc-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6l4 4 4-4"/></svg>
+    </button>
+    <div class="acc-body">
+
+      <h3>Historische Einordnung</h3>
+      <p>Das <strong>Koordinations-Anforderungs-Regler-Modell (KAR-Modell)</strong> wurde von <strong>Arnold Neumaier</strong> im Jahr 2009 in seiner grundlegenden Arbeit <em>„Koordinatives Anforderungsprofil und Koordinationstraining"</em> vorgelegt. Es stellt bis heute das differenzierteste deutschsprachige Analyseinstrument zur systematischen Beschreibung koordinativer Bewegungsanforderungen dar.</p>
+      <p>Neumaier greift dabei auf das klassische Werk von <strong>Meinel und Schnabel</strong> zurück, die bereits 1974 eine erste systematische Koordinationslehre im deutschsprachigen Raum begründeten, sowie auf die kybernetischen Ansätze von <strong>Bernstein (1967)</strong>, der als Begründer der modernen Bewegungswissenschaft gilt.</p>
+
+      <div class="cite">
+        <strong>Neumaier (2009, S. 43):</strong> „Das koordinative Anforderungsprofil einer Sportart ergibt sich aus dem spezifischen Zusammenwirken von Druckbedingungen und Informationsanforderungen, die im Trainingsprozess gezielt aufgebaut werden müssen."
+      </div>
+
+      <h3>Einordnung in die Sportwissenschaft</h3>
+      <p>Das KAR-Modell ist im Schnittfeld von <strong>Trainingswissenschaft, Sportmotorik und Bewegungspsychologie</strong> angesiedelt. Es gehört zur Gruppe der sogenannten <strong>Fähigkeitsmodelle</strong>, die koordinative Leistungsvoraussetzungen nicht als einheitliches Konstrukt, sondern als multidimensionale Anforderungsstruktur begreifen.</p>
+
+      <div class="def-list">
+        <div class="def-item">
+          <span class="def-term">Koordination (allg.)</span>
+          <span class="def-desc">Geordnetes Zusammenwirken von ZNS und Skelettmuskulatur zur Steuerung und Regelung von Bewegungsabläufen (Meinel & Schnabel, 2007)</span>
+        </div>
+        <div class="def-item">
+          <span class="def-term">Koordinative Fähigkeiten</span>
+          <span class="def-desc">Relativ stabile, generalisierte Leistungsdispositionen für die Regulierung motorischer Handlungen (Hirtz, 1985)</span>
+        </div>
+        <div class="def-item">
+          <span class="def-term">Anforderungsprofil</span>
+          <span class="def-desc">Systematische Beschreibung der koordinativen Anforderungen einer Sportart oder Übung anhand definierter Kategorien</span>
+        </div>
+      </div>
+
+      <h3>Abgrenzung zu älteren Modellen</h3>
+      <p>Ältere Modelle wie das Fähigkeitsprofil nach <strong>Hirtz (1985)</strong> (Reaktionsfähigkeit, Orientierungsfähigkeit, Differenzierungsfähigkeit, Rhythmusfähigkeit, Gleichgewichtsfähigkeit) beschreiben Koordination aus der Perspektive der <em>Fähigkeit</em> des Sportlers. Das KAR-Modell hingegen beschreibt die koordinativen <em>Anforderungen der Aufgabe</em> selbst — eine didaktisch und trainingspraktisch bedeutsame Verschiebung der Perspektive.</p>
+
+      <div class="important">
+        <div class="important-label">Merksatz für den Leistungskurs</div>
+        Hirtz fragt: <em>„Was kann der Sportler?"</em> — Neumaier fragt: <em>„Was verlangt die Aufgabe?"</em> Das KAR-Modell analysiert die Aufgabe, nicht den Akteur.
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- 2 -->
+  <div class="acc-item" id="s2">
+    <button class="acc-btn" onclick="toggle(this)">
+      <span class="acc-num">2</span>
+      <span class="acc-title">
+        Motorische Koordination – Theoretische Grundbegriffe
+        <span class="acc-sub">Bernstein · Meinel/Schnabel · Regelkreismodell</span>
+      </span>
+      <svg class="acc-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6l4 4 4-4"/></svg>
+    </button>
+    <div class="acc-body">
+
+      <h3>Neurophysiologische Grundlagen</h3>
+      <p>Motorische Koordination beruht auf dem <strong>sensomotorischen Regelkreis</strong>: Das zentrale Nervensystem (ZNS) empfängt afferente Informationen aus Sinnesorganen (Propriozeptoren, Exterozeptoren), verarbeitet diese und sendet efferente Steuersignale an die Muskulatur. Die Qualität dieser Informationsverarbeitung bestimmt die Bewegungsqualität.</p>
+      <p><strong>Bernstein (1967)</strong> formulierte in seiner bahnbrechenden Arbeit <em>„The Coordination and Regulation of Movements"</em> das Prinzip der <strong>Redundanz motorischer Freiheitsgrade</strong>: Das menschliche Bewegungssystem hat weit mehr Freiheitsgrade (Gelenke × Achsen) als zur Lösung einer Bewegungsaufgabe nötig sind. Koordination besteht darin, diese Freiheitsgrade kontrolliert zu <em>kondensieren</em> (einzuschränken).</p>
+
+      <div class="cite">
+        <strong>Bernstein (1967, S. 109):</strong> „Coordination of a movement is the process of mastering redundant degrees of freedom of the moving organ, in other words its conversion into a controllable system."
+      </div>
+
+      <h3>Das sensomotorische Regelkreismodell</h3>
+      <p>Das Regelkreismodell nach <strong>Adams (1971)</strong> und <strong>Schmidt (1975)</strong> unterscheidet:</p>
+      <ul>
+        <li><strong>Soll-Wert (Referenz):</strong> Die gespeicherte Bewegungsvorstellung / motorisches Programm</li>
+        <li><strong>Ist-Wert:</strong> Aktuelle Bewegungsrückmeldung (kinästhetisch, visuell, vestibulär)</li>
+        <li><strong>Regelabweichung:</strong> Differenz → löst Korrekturreaktion aus</li>
+        <li><strong>Stellgröße:</strong> Neuromuskulärer Korrekturbefehl</li>
+      </ul>
+      <p>Das KAR-Modell beschreibt, unter welchen <em>Bedingungen</em> (Druckbedingungen) und über welche <em>Kanäle</em> (Informationsanforderungen) dieser Regelkreis beansprucht wird.</p>
+
+      <h3>Koordination als Informationsverarbeitungsprozess</h3>
+      <p>In Anlehnung an die kognitive Psychologie (Welford, 1976; Wickens, 1984) wird Koordination als <strong>Informationsverarbeitung unter Kapazitätsbegrenzung</strong> verstanden. Das menschliche Informationsverarbeitungssystem hat eine begrenzte Kapazität (vgl. Baddeley's Arbeitsgedächtnismodell, 2000). Erhöhte Anforderungen in mehreren Dimensionen gleichzeitig führen zu <strong>Interferenz und Kapazitätsüberschreitungen</strong> — sichtbar im Leistungsabfall unter Wettkampfbedingungen.</p>
+
+      <div class="example">
+        <div class="example-label">Sportpraxisbeispiel</div>
+        Ein Fußballspieler beim Elfmeter: Geringe Zeitanforderung, aber hoher Präzisionsdruck, hoher Situationsdruck (Torwart bewegt sich, Zuschauer), hohe optische und kinästhetische Anforderungen — der Regelkreis muss unter emotionalem Stress präzise arbeiten.
+      </div>
+
+      <h3>Zwei-Wege-Steuerung: Open-Loop vs. Closed-Loop</h3>
+      <p><strong>Adams (1971)</strong> unterscheidet zwei fundamentale Steuerungsformen:</p>
+      <ul>
+        <li><strong>Closed-Loop (Regelung):</strong> Kontinuierliche sensorische Rückkopplung während der Bewegung. Typisch für langsame, präzise Bewegungen. Hohe Anforderung an Informationsverarbeitung.</li>
+        <li><strong>Open-Loop (Steuerung):</strong> Bewegung läuft nach vorgespeichertem Programm ohne Rückkopplung ab. Typisch für schnelle ballistische Bewegungen. Im KAR-Modell: hoher Zeitdruck reduziert die Möglichkeit zur Closed-Loop-Regulation.</li>
+      </ul>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- 3 -->
+  <div class="acc-item" id="s3">
+    <button class="acc-btn" onclick="toggle(this)">
+      <span class="acc-num">3</span>
+      <span class="acc-title">
+        Die fünf Druckbedingungen im Detail
+        <span class="acc-sub">Präzision · Zeit · Komplexität · Situation · Belastung</span>
+      </span>
+      <svg class="acc-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6l4 4 4-4"/></svg>
+    </button>
+    <div class="acc-body">
+
+      <h3>Konzept der Druckbedingungen</h3>
+      <p>Druckbedingungen beschreiben die <strong>aufgabenimmanenten Anforderungsmerkmale</strong>, die den koordinativen Schwierigkeitsgrad einer motorischen Handlung bestimmen. Sie sind unabhängig vom Leistungsniveau des Sportlers — sie sind Eigenschaften der <em>Aufgabe</em>, nicht der Person.</p>
+
+      <div class="scale-row">
+        <div class="scale-cell"><span class="sc-val">1–2</span><span class="sc-lab">Sehr gering</span></div>
+        <div class="scale-cell"><span class="sc-val">3–4</span><span class="sc-lab">Gering</span></div>
+        <div class="scale-cell"><span class="sc-val">5–6</span><span class="sc-lab">Mittel</span></div>
+        <div class="scale-cell"><span class="sc-val">7–8</span><span class="sc-lab">Hoch</span></div>
+        <div class="scale-cell"><span class="sc-val">9–10</span><span class="sc-lab">Maximal</span></div>
+      </div>
+
+      <h3>1. Präzisionsdruck</h3>
+      <p>Der <strong>Präzisionsdruck</strong> beschreibt die Genauigkeitsanforderung an eine Bewegung — räumlich, zeitlich oder dynamisch. Er steigt mit zunehmender Verkleinerung des Toleranzbereichs (z.B. engeres Ziel, kleineres Zeitfenster, höhere Kraftdosierungsanforderungen).</p>
+      <p>Neurophysiologisch korreliert hoher Präzisionsdruck mit erhöhter <strong>propriozeptiver und visueller Afferenznutzung</strong> sowie verstärkter kortikaler Aktivierung (Jeannerod, 1988). Je höher der Präzisionsdruck, desto stärker muss das Closed-Loop-System beansprucht werden.</p>
+      <div class="example">
+        <div class="example-label">Skalenbeispiele</div>
+        <strong>Niedrig (2):</strong> Handball-Torwurf auf leeres Tor aus 5m — großes Ziel, weiter Toleranzbereich.<br>
+        <strong>Hoch (8):</strong> Billard-Stoß mit zwei Banden auf präzisen Zielpunkt — minimaler Toleranzbereich in drei Dimensionen.
+      </div>
+
+      <h3>2. Zeitdruck</h3>
+      <p>Der <strong>Zeitdruck</strong> beschreibt die Anforderung, eine Bewegung in einem begrenzten oder sehr engen Zeitfenster auszuführen. Er beeinflusst direkt die Möglichkeit zur sensorischen Rückkopplung während der Bewegung.</p>
+      <p>Über einer Bewegungsdauer von ca. 200 ms wird eine Closed-Loop-Steuerung mit visueller Rückkopplung möglich (Keele & Posner, 1968). Darunter überwiegt die Open-Loop-Programmsteuerung. Hoher Zeitdruck erzwingt damit einen Wechsel vom kognitiv kontrollierten zum automatisierten Bewegungsmodus.</p>
+      <div class="example">
+        <div class="example-label">Skalenbeispiele</div>
+        <strong>Niedrig (2):</strong> Yoga-Gleichgewichtsübung — freie Zeitgestaltung, beliebig langes Halten.<br>
+        <strong>Hoch (9):</strong> Rückhandvolley im Tennis gegen einen 200 km/h-Aufschlag — Reaktionszeit unter 100 ms.
+      </div>
+
+      <h3>3. Komplexitätsdruck</h3>
+      <p>Der <strong>Komplexitätsdruck</strong> beschreibt die Anzahl und Verschiedenartigkeit der gleichzeitig oder schnell nacheinander zu regulierenden Bewegungselemente. Er steigt mit der Anzahl zu koordinierender Körperteile, der Anzahl simultaner Aufgaben und der Verzahnungsenge von Teilbewegungen.</p>
+      <p>Kognitionspsychologisch entspricht dies der <strong>Dual-Task-Problematik</strong> (Kahneman, 1973): Mehrere Aufgaben teilen sich eine begrenzte Aufmerksamkeitskapazität. Hoher Komplexitätsdruck führt zu gegenseitiger Interferenz der Teilaufgaben.</p>
+      <div class="example">
+        <div class="example-label">Skalenbeispiele</div>
+        <strong>Niedrig (2):</strong> Einfaches Gehen auf ebenem Untergrund — hochangepasste Automatisierung.<br>
+        <strong>Hoch (9):</strong> Kunstturnen: Ringe-Übung mit simultaner Kraft-, Gleichgewichts- und Beweglichkeitsregulation.
+      </div>
+
+      <h3>4. Situationsdruck</h3>
+      <p>Der <strong>Situationsdruck</strong> beschreibt den Grad der Variabilität, Unvorhersehbarkeit und Offenheit der Bewegungssituation. Er steigt bei zunehmend wechselnden Umgebungsbedingungen, gegnerischen Aktionen und situativer Unberechenbarkeit.</p>
+      <p>Kognitiv entspricht dies der <strong>Anforderung an die Antizipationsfähigkeit</strong> und an das <strong>taktische Handeln</strong> unter Unsicherheit (Schmidt & Lee, 2011). Hoher Situationsdruck erfordert einen schnellen Wechsel zwischen Handlungsalternativen und flexible Programmabruf.</p>
+      <div class="example">
+        <div class="example-label">Skalenbeispiele</div>
+        <strong>Niedrig (2):</strong> Schwimmen — definierte, gleichbleibende Umgebung, kein Gegner.<br>
+        <strong>Hoch (9):</strong> Feldhockey-Zweikampf — ständig wechselnde Positionen, Richtungsänderungen, Scheinbewegungen.
+      </div>
+
+      <h3>5. Belastungsdruck</h3>
+      <p>Der <strong>Belastungsdruck</strong> ist die einzige Druckbedingung, die <em>keine</em> aufgabenimmanente Anforderung beschreibt, sondern den <strong>Zustand des ausführenden Systems</strong>. Er gibt an, unter welchem Ausmaß physischer oder psychischer Ermüdung die Bewegung ausgeführt werden muss.</p>
+      <p>Physiologisch führt Ermüdung zu einer Reduktion der <strong>zentralnervösen Verarbeitungskapazität</strong>, einer Verschlechterung der <strong>propriozeptiven Sensitivität</strong> (Proske & Gandevia, 2012) und einer Verlangsamung afferenter Signalverarbeitung. Dies erhöht faktisch alle anderen Druckbedingungen — ein bereits hoher Präzisionsdruck wird unter Ermüdung noch schwerer beherrschbar.</p>
+      <div class="important">
+        <div class="important-label">Wechselwirkung – wichtig für die App</div>
+        Belastungsdruck ist der einzige <em>Amplifikator</em> im KAR-Modell: Er erhöht nicht selbst die Anforderung, sondern reduziert die Ressourcen zur Bewältigung aller anderen Anforderungen. In der interaktiven App sehen Sie dies als gelben Delta-Indikator auf den anderen Druckreglern.
+      </div>
+      <div class="example">
+        <div class="example-label">Skalenbeispiele</div>
+        <strong>Niedrig (2):</strong> Aufgewärmter, ausgeruhter Sprinter vor dem Start.<br>
+        <strong>Hoch (9):</strong> Läufer im 1500m-Finale, letztes 200m-Spurt — maximale Azidose, Koordination unter extremer Ermüdung.
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- 4 -->
+  <div class="acc-item" id="s4">
+    <button class="acc-btn" onclick="toggle(this)">
+      <span class="acc-num">4</span>
+      <span class="acc-title">
+        Die sechs Informationsanforderungen im Detail
+        <span class="acc-sub">Optisch · Akustisch · Taktil · Kinästhetisch · Vestibulär · Gleichgewicht</span>
+      </span>
+      <svg class="acc-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6l4 4 4-4"/></svg>
+    </button>
+    <div class="acc-body">
+
+      <h3>Konzept der Informationsanforderungen</h3>
+      <p>Informationsanforderungen beschreiben, welche <strong>sensorischen Kanäle</strong> für die erfolgreiche Ausführung einer motorischen Handlung genutzt, verarbeitet und integriert werden müssen. Sie basieren auf dem Konzept der <strong>sensorischen Integration</strong> (Ayres, 1972), der Neurologie der Propriozeption (Kandel et al., 2000) und der Wahrnehmungspsychologie.</p>
+      <p>Die koordinative Anforderung eines Informationskanals steigt mit der Präzision, Aktualität und Komplexität der benötigten Information aus diesem Kanal.</p>
+
+      <h3>1. Optische Anforderungen</h3>
+      <p>Das visuelle System liefert beim Menschen ca. <strong>80–90 % der Umgebungsinformationen</strong> (Kandel et al., 2000) und ist daher bei den meisten Sportarten der dominante afferente Kanal. Optische Anforderungen umfassen die Wahrnehmung von Objekt- und Körperbewegungen, die räumliche Orientierung und die visomotorische Koordination (Auge-Hand, Auge-Fuß).</p>
+      <p>Neuroanatomisch ist das visuelle Koordinationssystem in zwei Ströme geteilt: den <strong>ventralen „Was-Strom"</strong> (Objekterkennung, Temporallappen) und den <strong>dorsalen „Wo-Strom"</strong> (räumliche Lokalisation und Bewegungssteuerung, Parietallappen) (Goodale & Milner, 1992).</p>
+      <div class="example">
+        <div class="example-label">Hohe optische Anforderungen</div>
+        Tischtennis: Ball-Tracking bei 100+ km/h, simultane Beobachtung des Gegners, Tischkanten und eigener Schlägerhaltung. Abrupte Richtungswechsel des Balls.
+      </div>
+
+      <h3>2. Akustische Anforderungen</h3>
+      <p>Akustische Informationen dienen im Sport vor allem der <strong>Taktung und Rhythmusorientierung</strong> sowie der Reaktionsauslösung (Startschuss, Schiedsrichterkommando). Das auditive System hat gegenüber dem visuellen System eine kürzere neuronale Latenz (~8 ms vs. ~20 ms), was es besonders für Reaktionsleistungen bedeutsam macht.</p>
+      <p>In Mannschaftsspielen dienen Zurufe als Koordinationsmittel; im Kunstturnen und in der Rhythmischen Sportgymnastik ist die akustisch-motorische Synchronisation (Musik ↔ Bewegung) eine spezifische Koordinationsanforderung.</p>
+      <div class="example">
+        <div class="example-label">Hohe akustische Anforderungen</div>
+        Rhythmische Sportgymnastik: Bewegungsablauf muss taktgenau mit Musikstruktur übereinstimmen; simultane Verarbeitung von Rhythmus, Metrum und emotionalem Ausdruck.
+      </div>
+
+      <h3>3. Taktile Anforderungen</h3>
+      <p>Die taktile Wahrnehmung umfasst Druck-, Berührungs-, Temperatur- und Schmerzreize der Haut und liefert bei direktem Körper- oder Gerätekontakt wichtige Regulationsinformationen. Besonders bedeutsam ist die <strong>Diskriminationsleistung der Mechanorezetoren</strong> (Meissner-Körperchen, Ruffini-Körperchen, Pacini-Körperchen) für die Feinregulation von Griffstärke und Geräteführung.</p>
+      <div class="example">
+        <div class="example-label">Hohe taktile Anforderungen</div>
+        Klettern: Fingerbeurteilung der Griffbeschaffenheit, Reibungswiderstand, Wärmeverteilung im Griff — entscheidend für Sturzvermeidung.
+      </div>
+
+      <h3>4. Kinästhetische Anforderungen</h3>
+      <p>Die Kinästhesie (griech.: <em>kinein</em> = bewegen, <em>aisthesis</em> = Wahrnehmung) bezeichnet die <strong>Tiefensensibilität des Bewegungsapparates</strong>: Muskelspindeln messen Muskellänge und Dehngeschwindigkeit; Golgi-Sehnenorgane messen Muskelkraft; Gelenk-Mechanorezeptoren liefern Winkel- und Beschleunigungsinformation.</p>
+      <p>Kinästhetische Informationen sind die Grundlage des <strong>Bewegungsgefühls</strong> (<em>feel for the movement</em>) und der internen Bewegungsmodellierung. Hohe kinästhetische Anforderungen finden sich bei Sportarten mit feiner Kraftdosierung, Körpergefühlsarbeit und propriozeptivem Feedback.</p>
+      <div class="example">
+        <div class="example-label">Hohe kinästhetische Anforderungen</div>
+        Gewichtheben: Präzise Dosierung der Beschleunigungsphasen in Reißen/Stoßen; das „Gefühl" für den optimalen Krafteinsatz-Zeitpunkt ist ausschließlich kinästhetisch vermittelt.
+      </div>
+
+      <h3>5. Vestibuläre Anforderungen</h3>
+      <p>Das Vestibularsystem (Bogengänge + Makulaorgane) registriert <strong>Drehbeschleunigungen und Linearbeschleunigungen</strong> des Kopfes. Es ist maßgeblich an der Stabilisierung des Blickfeldes (Vestibulo-okularer Reflex), der Posturalreflexe (Vestibulo-spinaler Reflex) und der räumlichen Orientierung beteiligt (Goldberg et al., 2012).</p>
+      <p>Hohe vestibuläre Anforderungen entstehen bei schnellen Rotationen, Richtungsänderungen und lageabhängigen Positionen. Bei Überforderung des Vestibularsystems kommt es zu <strong>Schwindel, Desorientierung und Nausea</strong>, die die koordinative Leistung massiv beeinträchtigen.</p>
+      <div class="example">
+        <div class="example-label">Hohe vestibuläre Anforderungen</div>
+        Eiskunstlaufen: 3-fache Axel — 3,5 Rotationen in ca. 0,5 Sekunden; vestibuläre Deafferentierung nach der Rotation muss durch Training kompensiert werden.
+      </div>
+
+      <h3>6. Gleichgewichtsanforderungen</h3>
+      <p>Gleichgewicht im sportwissenschaftlichen Sinne beschreibt die <strong>posturale Kontrolle</strong> — die Fähigkeit, den Körperschwerpunkt über der Unterstützungsfläche zu halten oder gezielt zu verlagern (Winter, 1995). Es ist ein <em>multisensorisches Konstrukt</em>, das visuelle, vestibuläre und somatosensorische Informationen integriert und über den zerebrellären und spinalen Apparat reguliert wird.</p>
+      <p>Neumaier differenziert Gleichgewicht von vestibulärer Anforderung, da posturale Kontrolle ein höheres Integrationsniveau darstellt als die reine Vestibularperzeption.</p>
+      <div class="example">
+        <div class="example-label">Hohe Gleichgewichtsanforderungen</div>
+        Surfen: dynamisches Gleichgewicht auf instabilem, sich bewegendem Untergrund; simultane Anpassung an Wellenbewegungen, Windeinfluss und Körperschwerpunktverlagerungen.
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- 5 -->
+  <div class="acc-item" id="s5">
+    <button class="acc-btn" onclick="toggle(this)">
+      <span class="acc-num">5</span>
+      <span class="acc-title">
+        Wechselwirkungen und Interdependenzen
+        <span class="acc-sub">Speed-Accuracy-Tradeoff · Belastungs-Amplifikation · Kognitive Überlastung</span>
+      </span>
+      <svg class="acc-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6l4 4 4-4"/></svg>
+    </button>
+    <div class="acc-body">
+
+      <h3>Warum das KAR-Modell kein additives Modell ist</h3>
+      <p>Eine naive Lesart des KAR-Modells würde die Gesamtbelastung als schlichte Summe aller elf Werte berechnen. Dies wäre theoretisch falsch: Die Dimensionen sind <strong>nicht unabhängig voneinander</strong>, sondern interagieren in wissenschaftlich gut belegten Mustern. Die interaktive App visualisiert drei zentrale Wechselwirkungen.</p>
+
+      <h3>Wechselwirkung 1: Speed-Accuracy-Tradeoff (Zeitdruck × Präzisionsdruck)</h3>
+      <p>Das <strong>Geschwindigkeit-Genauigkeits-Dilemma</strong> ist eine der meistuntersuchten Gesetzmäßigkeiten der Motorik. <strong>Fitts (1954)</strong> zeigte in seinem wegweisenden Experiment, dass die Bewegungszeit für Zielaufgaben logarithmisch mit dem Verhältnis von Distanz zu Zielgröße ansteigt (Fitts' Law):</p>
+
+      <div class="cite">
+        <strong>Fitts' Gesetz (1954):</strong> MT = a + b · log₂(2D/W) — wobei MT = Bewegungszeit, D = Distanz, W = Zielbreite, a und b = empirische Konstanten. Je kleiner das Ziel (höherer Präzisionsdruck), desto mehr Zeit wird benötigt. Wird diese Zeit durch Zeitdruck beschnitten, entsteht zwangsläufig ein Genauigkeitsverlust.
+      </div>
+
+      <p><strong>Schmidt et al. (1979)</strong> erweiterten diesen Befund durch die <strong>Impuls-Variabilitätshypothese</strong>: Bei schnelleren Bewegungen steigt die neuronale Impuls-Variabilität, was zu größeren Endpunktstreuungen führt. Gleichzeitig erhöht Zeitdruck die Ausschüttung von Stresshormonen (Kortisol, Adrenalin), die die motorische Präzision durch Veränderung der Muskelaktivierungsmuster weiter reduzieren (Janelle, 2002).</p>
+
+      <div class="important">
+        <div class="important-label">Bedeutung für die Trainingsplanung</div>
+        Übungen mit gleichzeitig hohem Zeitdruck (9) UND hohem Präzisionsdruck (9) stellen extreme koordinative Anforderungen, die nur durch jahrelanges spezifisches Training bewältigbar sind. Ein Schütze, der unter Druckbedingungen (Zeitlimit + Präzision) trainieren will, muss diese Kombination systematisch aufbauen.
+      </div>
+
+      <h3>Wechselwirkung 2: Belastungs-Amplifikation</h3>
+      <p>Physische Ermüdung beeinträchtigt die koordinative Leistung über mehrere Mechanismen:</p>
+      <ul>
+        <li><strong>Reduktion der propriozeptiven Sensitivität:</strong> Durch Laktatakkumulation und pH-Veränderungen verschlechtert sich die Impulsübertragung in Muskelspindeln und Golgi-Sehnenorganen (Proske & Gandevia, 2012)</li>
+        <li><strong>Zentralnervöse Ermüdung:</strong> Sinkende Aktivierung des präfrontalen Kortex reduziert die kognitive Überwachung und Fehlerkorrektur (Lorist et al., 2005)</li>
+        <li><strong>Biomechanische Kompensation:</strong> Ermüdete Muskeln ändern ihre Steifigkeitscharakteristik, was zu veränderten Bewegungsausführungen führt (Enoka & Duchateau, 2008)</li>
+      </ul>
+
+      <div class="cite">
+        <strong>Proske & Gandevia (2012, S. 1651):</strong> „Muscle fatigue leads to a significant reduction in the acuity of proprioceptive signals, particularly for muscle spindle afferents, which are crucial for fine motor control and limb position sense."
+      </div>
+
+      <h3>Wechselwirkung 3: Kognitive Informationsüberlastung (Komplexität × Info-Kanäle)</h3>
+      <p><strong>Wickens' Multiple-Resource-Theorie (1984, 2002)</strong> postuliert, dass das kognitive System über mehrere parallele Verarbeitungsressourcen verfügt (visuell-räumlich, verbal, motorisch). Werden diese simultан beansprucht, entstehen <strong>Interferenzen</strong> proportional zum Grad der Ressourcenteilung.</p>
+      <p>Im KAR-Modell: Sind vier oder mehr Informationskanäle gleichzeitig auf hohem Niveau (≥ 6) aktiv, übersteigt die simultane Verarbeitungsanforderung die verfügbare kognitive Kapazität. Dies erhöht faktisch den Komplexitätsdruck — der Sportler muss Informationen selektieren und priorisieren, was zu Informationsverlust und verzögerter motorischer Reaktion führt.</p>
+
+      <div class="example">
+        <div class="example-label">Sportpraxisbeispiel: Freiwasserschwimmen</div>
+        Simultane Anforderungen: Optisch (Orientierung, Wellenkämme), Kinästhetisch (Schlagtechnik, Roll-Turn), Vestibulär (Lagewechsel durch Wellen), Taktil (Wasserwiderstand) und Gleichgewicht (posturale Kontrolle im bewegten Wasser). Bei 4–5 gleichzeitig hochaktiven Kanälen entsteht kognitive Überlastung, die besonders in der Schlussphase bei hohem Belastungsdruck kollabiert.
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- 6 -->
+  <div class="acc-item" id="s6">
+    <button class="acc-btn" onclick="toggle(this)">
+      <span class="acc-num">6</span>
+      <span class="acc-title">
+        Anwendung: Sportartanalyse mit dem KAR-Modell
+        <span class="acc-sub">Spielsport · Kampfsport · Turnen · Leichtathletik</span>
+      </span>
+      <svg class="acc-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6l4 4 4-4"/></svg>
+    </button>
+    <div class="acc-body">
+
+      <h3>Methodische Vorgehensweise bei der Sportartanalyse</h3>
+      <p>Bei der Anwendung des KAR-Modells zur Sportartanalyse empfiehlt Neumaier (2009) eine <strong>situationsspezifische Betrachtung</strong>: Das Anforderungsprofil einer Sportart variiert je nach Situation (Angriff vs. Verteidigung, Standardsituation vs. offenes Spiel). Sinnvoll ist die Erstellung von <strong>Profilen für typische Spielsituationen</strong>, nicht für die Sportart als Ganzes.</p>
+
+      <h3>Basketball — Spielmacher im Fastbreak</h3>
+      <div class="def-list">
+        <div class="def-item"><span class="def-term">Präzisionsdruck</span><span class="def-desc">7 — Passgenauigkeit auf bewegten Mitspieler in Lücken</span></div>
+        <div class="def-item"><span class="def-term">Zeitdruck</span><span class="def-desc">8 — Entscheidung und Ausführung in &lt; 0,5 Sek.</span></div>
+        <div class="def-item"><span class="def-term">Komplexitätsdruck</span><span class="def-desc">9 — simultane Ball-, Mitspieler-, Gegner-, Raumwahrnehmung + Ausführung</span></div>
+        <div class="def-item"><span class="def-term">Situationsdruck</span><span class="def-desc">9 — vollständig offene, sich ständig ändernde Situation</span></div>
+        <div class="def-item"><span class="def-term">Belastungsdruck</span><span class="def-desc">6–8 — im 4. Viertel unter Müdigkeit</span></div>
+        <div class="def-item"><span class="def-term">Optisch</span><span class="def-desc">9 — periphere Wahrnehmung mehrerer Akteure simultan</span></div>
+        <div class="def-item"><span class="def-term">Kinästhetisch</span><span class="def-desc">7 — Ballgefühl, Schrittregulation beim Dribbling</span></div>
+      </div>
+
+      <h3>Judo — Wurfausführung im Wettkampf</h3>
+      <div class="def-list">
+        <div class="def-item"><span class="def-term">Präzisionsdruck</span><span class="def-desc">8 — millimetergenaue Kuzushi-Vorbereitung (Gleichgewichtsbrechen)</span></div>
+        <div class="def-item"><span class="def-term">Zeitdruck</span><span class="def-desc">9 — Wurfmoment an 0,1-Sek.-Fenster gebunden</span></div>
+        <div class="def-item"><span class="def-term">Situationsdruck</span><span class="def-desc">9 — gegnerische Gegenwehr, ständig wechselnde Positionen</span></div>
+        <div class="def-item"><span class="def-term">Taktil</span><span class="def-desc">9 — Griff-Druckinformation als primärer Handlungsauslöser</span></div>
+        <div class="def-item"><span class="def-term">Vestibulär</span><span class="def-desc">8 — Orientierung beim gemeinsamen Fallen/Drehen</span></div>
+      </div>
+
+      <h3>Hochsprung — Flop-Technik</h3>
+      <div class="def-list">
+        <div class="def-item"><span class="def-term">Präzisionsdruck</span><span class="def-desc">9 — Absprungpunkt und -winkel auf cm-Toleranz</span></div>
+        <div class="def-item"><span class="def-term">Zeitdruck</span><span class="def-desc">9 — ballistische Absprungphase, keine Korrekturen möglich</span></div>
+        <div class="def-item"><span class="def-term">Komplexitätsdruck</span><span class="def-desc">8 — Anlauf, Absprung, Überwerfung, Landung als Einheit</span></div>
+        <div class="def-item"><span class="def-term">Situationsdruck</span><span class="def-desc">3 — standardisierte, geschlossene Situation</span></div>
+        <div class="def-item"><span class="def-term">Kinästhetisch</span><span class="def-desc">9 — Absprungdruck, Kurvengeschwindigkeit, Rückenstreckung</span></div>
+        <div class="def-item"><span class="def-term">Vestibulär</span><span class="def-desc">8 — Rückwärts-Flop-Rotation über Latte</span></div>
+      </div>
+
+      <div class="important">
+        <div class="important-label">Aufgabe für den Leistungskurs</div>
+        Analysiert in Kleingruppen eine euch bekannte Sportart/Disziplin mit der KAR-App. Erstellt Profile für mindestens zwei kontrastierende Spielsituationen (z.B. Standardsituation vs. offenes Spiel). Diskutiert: Welche Wechselwirkungen werden sichtbar? Wie verändert sich das Profil unter Wettkampfbedingungen (höherer Belastungsdruck)?
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- 7 -->
+  <div class="acc-item" id="s7">
+    <button class="acc-btn" onclick="toggle(this)">
+      <span class="acc-num">7</span>
+      <span class="acc-title">
+        Koordinationstraining nach dem KAR-Modell
+        <span class="acc-sub">Differenzierungsmethode · Belastungssteuerung · Übungsbeispiele</span>
+      </span>
+      <svg class="acc-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6l4 4 4-4"/></svg>
+    </button>
+    <div class="acc-body">
+
+      <h3>Grundprinzip: Vom Profil zur Übung</h3>
+      <p>Das Anforderungsprofil einer Sportart, erstellt mit dem KAR-Modell, liefert den Sollzustand für das Training. Übungsformen sind so zu gestalten, dass sie das Profil der Wettkampfsituation möglichst genau abbilden — oder gezielt einzelne Anforderungsdimensionen isolieren und steigern.</p>
+      <p>Neumaier (2009) empfiehlt die <strong>Differenzierungsmethode</strong>: Ausgehend von einer Grundübung werden systematisch einzelne KAR-Dimensionen variiert, um spezifische Trainingsreize zu setzen.</p>
+
+      <h3>Die Differenzierungsmethode</h3>
+      <div class="def-list">
+        <div class="def-item"><span class="def-term">Zeitvariation</span><span class="def-desc">Gleiche Bewegung unter Zeitdruck ausführen (Metronom, Gegner, Zeitlimit)</span></div>
+        <div class="def-item"><span class="def-term">Präzisionsvariation</span><span class="def-desc">Zielgröße verkleinern, Kraftdosierung verfeinern, Toleranzbereich einengen</span></div>
+        <div class="def-item"><span class="def-term">Situationsvariation</span><span class="def-desc">Von der geschlossenen zur offenen Aufgabe; Gegner hinzufügen, Signale variieren</span></div>
+        <div class="def-item"><span class="def-term">Belastungsvariation</span><span class="def-desc">Koordinationsübungen ans Ende einer Belastungseinheit setzen (ermüdungsinduzierte Steigerung)</span></div>
+        <div class="def-item"><span class="def-term">Kanalvariation</span><span class="def-desc">Einen Sinneskanal ausschalten (Augenbinde) → andere Kanäle stärker beanspruchen</span></div>
+      </div>
+
+      <h3>Trainingsplanung: Periodisierung koordinativer Belastung</h3>
+      <p>Nach <strong>Weineck (2010)</strong> und <strong>Roth & Krüger (2011)</strong> gilt für die Periodisierung koordinativen Trainings:</p>
+      <ul>
+        <li><strong>Vorbereitungsperiode:</strong> Hoher Anteil an Koordinationsübungen, vorrangig Lern- und Technikanforderungen — mittlerer Belastungsdruck, hohe Präzisions- und Komplexitätsanforderungen</li>
+        <li><strong>Wettkampfvorbereitung:</strong> Wettkampfnahe Profile — Situationsdruck und Zeitdruck werden erhöht, Belastungsdruck steigt</li>
+        <li><strong>Übergangsperiode:</strong> Koordinationsschulung ohne Ermüdungsdruck — Förderung der Grundkoordination und Regeneration</li>
+      </ul>
+
+      <h3>Praktische Übungsbeispiele mit KAR-Profilen</h3>
+      <div class="example">
+        <div class="example-label">Übung 1: Ballfangen unter Zeitdruck (Basketball)</div>
+        Zwei Spieler mit je einem Ball stehen sich gegenüber (5m). Gleichzeitiger Wurf auf Signal. Zielzonen (Reifen am Boden) verengen sich jede Runde.<br>
+        <strong>KAR-Zieldimensionen:</strong> Zeitdruck ↑ (gleichzeitiger Wechsel), Präzisionsdruck ↑ (engere Zonen), Optisch ↑ (zwei Bälle simultan tracken).
+      </div>
+      <div class="example">
+        <div class="example-label">Übung 2: Koordinationsleiter unter Ermüdung (Fußball)</div>
+        Koordinationsleiter-Parcours wird nach 10 Sprints à 30m absolviert. Variationen der Schrittfolge werden jede Runde geändert.<br>
+        <strong>KAR-Zieldimensionen:</strong> Belastungsdruck ↑, Komplexitätsdruck ↑ (neue Muster), Kinästhetisch ↑ (Fußarbeit unter Ermüdung), Zeitdruck ↑ (Tempoerhalt).
+      </div>
+      <div class="example">
+        <div class="example-label">Übung 3: Reaktionswand (Handball)</div>
+        Leuchtende Felder an einer Reaktionswand müssen in vorgegebener Zeit mit der Hand getroffen werden. Schwierigkeit steigt durch: schnelleres Tempo, kleinere Felder, Rückstoß durch Partner.<br>
+        <strong>KAR-Zieldimensionen:</strong> Zeitdruck ↑, Präzisionsdruck ↑, Optisch ↑, Situationsdruck ↑ (unvorhersehbare Abfolge).
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- 8 -->
+  <div class="acc-item" id="s8">
+    <button class="acc-btn" onclick="toggle(this)">
+      <span class="acc-num">8</span>
+      <span class="acc-title">
+        Diagnostik und Anforderungsprofile
+        <span class="acc-sub">Testverfahren · Profilerstellung · Trainingsdiagnostik</span>
+      </span>
+      <svg class="acc-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6l4 4 4-4"/></svg>
+    </button>
+    <div class="acc-body">
+
+      <h3>Aufgabenanalyse als diagnostische Methode</h3>
+      <p>Die Erstellung eines KAR-Profils ist selbst eine diagnostische Methode: Die <strong>Expert*innen-Einschätzung</strong> von Trainer, Sportwissenschaftler und Athlet dient als Grundlage für eine systematische <strong>Aufgabenanalyse</strong> (task analysis). Diese kann durch:</p>
+      <ul>
+        <li><strong>Videoanalyse</strong> (Bewegungsqualität, Situationsvariabilität)</li>
+        <li><strong>Biomechanische Messungen</strong> (Kraftkurven, Beschleunigungsprofile)</li>
+        <li><strong>Eye-Tracking</strong> (visueller Suchprozess, Fixationsdauer)</li>
+        <li><strong>Herzfrequenz-/Laktatmessung</strong> (Belastungsdruck objektivieren)</li>
+      </ul>
+      <p>ergänzt und objektiviert werden (vgl. Williams & Grant, 1999; Vickers, 2007).</p>
+
+      <h3>Reliabilität und Validität der Einschätzung</h3>
+      <p>Da die KAR-Skalierung auf Expertenratings beruht, ist die <strong>Inter-Rater-Reliabilität</strong> ein kritischer Faktor. Studien zur Sportartanalyse zeigen, dass gut operationalisierte Ankerpunkte die Übereinstimmung zwischen Rater*innen auf Intraklassen-Korrelationskoeffizienten (ICC) > 0.75 anheben können (Bös, 2001; Roth & Krüger, 2011).</p>
+
+      <h3>Schüler-Selbstdiagnose: Die App als Lernwerkzeug</h3>
+      <p>Für den Sportunterricht im Leistungskurs bietet die KAR-App eine Möglichkeit zur <strong>angeleiteten Selbstdiagnose</strong>: Schülerinnen und Schüler analysieren bekannte Sportbewegungen oder selbst durchgeführte Übungen anhand der 11 Dimensionen, erstellen Profile und vergleichen diese mit Benchmarks aus der Literatur.</p>
+
+      <div class="important">
+        <div class="important-label">Klausur-Relevanz</div>
+        Im Abitur Sport (NRW) ist die Beschreibung und Analyse koordinativer Anforderungen eine mögliche Teilaufgabe (vgl. Kernlehrplan Sport, MSB NRW 2014). Das KAR-Modell bietet hierfür eine fachlich anerkannte und operationalisierbare Grundlage — vorausgesetzt, die Einschätzungen werden sachlich begründet.
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════ -->
+  <!-- 9 -->
+  <div class="acc-item" id="s9">
+    <button class="acc-btn" onclick="toggle(this)">
+      <span class="acc-num">9</span>
+      <span class="acc-title">
+        Literaturverzeichnis
+        <span class="acc-sub">Primärquellen · Lehrwerke · Weiterführende Literatur</span>
+      </span>
+      <svg class="acc-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6l4 4 4-4"/></svg>
+    </button>
+    <div class="acc-body">
+
+      <h3>Primärliteratur zum KAR-Modell</h3>
+      <ul class="ref-list">
+        <li><strong>Neumaier, A. (2009).</strong> Koordinatives Anforderungsprofil und Koordinationstraining. Grundlagen, Analyse und Methodik (3., erw. Aufl.). Köln: Sportverlag Strauß.</li>
+        <li><strong>Neumaier, A. & Mechling, H. (1995).</strong> Allgemeines oder sportartspezifisches Koordinationstraining? Leistungssport, 25(5), 14–22.</li>
+      </ul>
+
+      <h3>Koordinationslehre und Motorik</h3>
+      <ul class="ref-list">
+        <li><strong>Bernstein, N.A. (1967).</strong> The Coordination and Regulation of Movements. Oxford: Pergamon Press.</li>
+        <li><strong>Hirtz, P. (1985).</strong> Koordinative Fähigkeiten im Schulsport. Berlin: Volk und Wissen.</li>
+        <li><strong>Meinel, K. & Schnabel, G. (2007).</strong> Bewegungslehre – Sportmotorik. Umriß einer Theorie der sportlichen Motorik unter pädagogischem Aspekt (11. Aufl.). Aachen: Meyer & Meyer.</li>
+        <li><strong>Roth, K. & Krüger, A. (2011).</strong> Sportmotorik. Grundlagen, Anwendungen und Grenzgebiete (2. Aufl.). Schorndorf: Hofmann.</li>
+        <li><strong>Weineck, J. (2010).</strong> Optimales Training. Leistungsphysiologische Trainingslehre unter besonderer Berücksichtigung des Kinder- und Jugendtrainings (16. Aufl.). Balingen: Spitta.</li>
+      </ul>
+
+      <h3>Neurophysiologie und Kognitionspsychologie</h3>
+      <ul class="ref-list">
+        <li><strong>Adams, J.A. (1971).</strong> A closed-loop theory of motor learning. Journal of Motor Behavior, 3(2), 111–150.</li>
+        <li><strong>Enoka, R.M. & Duchateau, J. (2008).</strong> Muscle fatigue: What, why and how it influences muscle function. Journal of Physiology, 586(1), 11–23.</li>
+        <li><strong>Fitts, P.M. (1954).</strong> The information capacity of the human motor system in controlling the amplitude of movement. Journal of Experimental Psychology, 47(6), 381–391.</li>
+        <li><strong>Goldberg, J.M. et al. (2012).</strong> The Vestibular System: A Sixth Sense. New York: Oxford University Press.</li>
+        <li><strong>Goodale, M.A. & Milner, A.D. (1992).</strong> Separate visual pathways for perception and action. Trends in Neurosciences, 15(1), 20–25.</li>
+        <li><strong>Janelle, C.M. (2002).</strong> Anxiety, arousal and visual attention: A mechanistic account of performance variability. Journal of Sports Sciences, 20(3), 237–251.</li>
+        <li><strong>Kahneman, D. (1973).</strong> Attention and Effort. Englewood Cliffs: Prentice-Hall.</li>
+        <li><strong>Kandel, E.R., Schwartz, J.H. & Jessell, T.M. (2000).</strong> Principles of Neural Science (4th ed.). New York: McGraw-Hill.</li>
+        <li><strong>Lorist, M.M. et al. (2005).</strong> Motor fatigue and cognitive task performance in humans. Journal of Physiology, 562(3), 849–858.</li>
+        <li><strong>Proske, U. & Gandevia, S.C. (2012).</strong> The proprioceptive senses: Their roles in signaling body shape, body position and movement, and muscle force. Physiological Reviews, 92(4), 1651–1697.</li>
+        <li><strong>Schmidt, R.A. (1975).</strong> A schema theory of discrete motor skill learning. Psychological Review, 82(4), 225–260.</li>
+        <li><strong>Schmidt, R.A. & Lee, T.D. (2011).</strong> Motor Control and Learning. A Behavioral Emphasis (5th ed.). Champaign: Human Kinetics.</li>
+        <li><strong>Schmidt, R.A., Zelaznik, H., Hawkins, B., Frank, J.S. & Quinn, J.T. (1979).</strong> Motor-output variability: A theory for the accuracy of rapid motor acts. Psychological Review, 86(5), 415–451.</li>
+        <li><strong>Wickens, C.D. (1984).</strong> Processing resources in attention. In R. Parasuraman & D.R. Davies (Eds.), Varieties of Attention (pp. 63–102). New York: Academic Press.</li>
+        <li><strong>Winter, D.A. (1995).</strong> Human balance and posture control during standing and walking. Gait & Posture, 3(4), 193–214.</li>
+      </ul>
+
+      <h3>Schulbücher und Lehrpläne</h3>
+      <ul class="ref-list">
+        <li><strong>MSB NRW (2014).</strong> Kernlehrplan für die Sekundarstufe II Gymnasium / Gesamtschule in Nordrhein-Westfalen: Sport. Düsseldorf: Ministerium für Schule und Berufsbildung NRW.</li>
+        <li><strong>Bös, K. (2001).</strong> Handbuch motorische Tests (2. Aufl.). Göttingen: Hogrefe.</li>
+        <li><strong>Vickers, J.N. (2007).</strong> Perception, Cognition, and Decision Training: The Quiet Eye in Action. Champaign: Human Kinetics.</li>
+      </ul>
+
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<footer>
+  © 2026 Ralf Duwenbeck · KAR-Modell Interaktiv V1.1 · Sport-Leistungskurs<br>
+  <span style="color:var(--text-3)">Erstellt für den Unterricht · Quellenangaben gemäß wissenschaftlicher Standards</span>
+</footer>
+
+<script>
+function toggle(btn) {
+  const item = btn.closest('.acc-item');
+  const wasOpen = item.classList.contains('open');
+  // Close all
+  document.querySelectorAll('.acc-item.open').forEach(el => el.classList.remove('open'));
+  // Open this if it was closed
+  if (!wasOpen) item.classList.add('open');
+}
+// Open first item by default
+document.querySelector('.acc-item')?.classList.add('open');
+</script>
+
+</body>
+</html>
