@@ -17,18 +17,20 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg:        #0D1117;
-      --surf:      #161B22;
-      --surf2:     #21262D;
-      --border:    rgba(255,255,255,0.08);
-      --border2:   rgba(255,255,255,0.15);
-      --text-1:    #E6EDF3;
-      --text-2:    #8B949E;
-      --text-3:    #484F58;
-      --radius:    10px;
+      --bg:      #141820;
+      --surf:    rgba(30,35,48,0.92);
+      --surf2:   rgba(40,46,62,0.95);
+      --border:  rgba(255,255,255,0.11);
+      --border2: rgba(255,255,255,0.22);
+      --text-1:  #F0F4FA;
+      --text-2:  #B0BAC8;
+      --text-3:  #7A8599;
+      --neon:    #C8F241;
+      --accent:  #6B96F5;
+      --radius:  10px;
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { height: 100%; }
+    html, body { height: 100%; overflow: hidden; }
     body {
       font-family: 'Inter', system-ui, sans-serif;
       background: var(--bg);
@@ -36,28 +38,64 @@
       -webkit-font-smoothing: antialiased;
       display: flex;
       flex-direction: column;
-      min-height: 100vh;
+    }
+
+    /* ── NEBULA CANVAS ───────────────────────── */
+    #nebula {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
     }
 
     /* ── HEADER ─────────────────────────────── */
     .hdr {
-      padding: 14px 28px;
+      position: relative;
+      z-index: 10;
+      padding: 0 20px 0 24px;
+      height: 50px;
       border-bottom: 1px solid var(--border);
       display: flex;
-      align-items: baseline;
-      gap: 12px;
+      align-items: center;
+      gap: 10px;
       flex-shrink: 0;
-      background: rgba(22,27,34,0.95);
-      backdrop-filter: blur(10px);
-      position: sticky; top: 0; z-index: 50;
+      background: rgba(20,24,32,0.95);
+      backdrop-filter: blur(12px);
     }
-    .hdr h1 { font-size: 1rem; font-weight: 600; letter-spacing: -0.02em; }
-    .hdr p  { font-size: 0.7rem; color: var(--text-3); }
+    .hdr h1 { font-size: 0.92rem; font-weight: 600; letter-spacing: -0.02em; white-space: nowrap; }
+    .hdr p  { font-size: 0.68rem; color: var(--text-3); white-space: nowrap; }
+    .hdr-gap { flex: 1; }
 
-    /* ── MAIN GRID ───────────────────────────── */
+    /* Theory button — top right */
+    .btn-theorie {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 13px;
+      background: rgba(200,242,65,0.08);
+      border: 1px solid rgba(200,242,65,0.3);
+      border-radius: var(--radius);
+      color: var(--neon);
+      font-size: 0.73rem;
+      font-weight: 600;
+      font-family: inherit;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: all 0.15s;
+      flex-shrink: 0;
+    }
+    .btn-theorie:hover {
+      background: rgba(200,242,65,0.15);
+      border-color: rgba(200,242,65,0.55);
+      box-shadow: 0 0 14px rgba(200,242,65,0.18);
+    }
+    .btn-theorie svg { width: 12px; height: 12px; flex-shrink: 0; }
+
+    /* ── MAIN: RESIZABLE SPLIT ──────────────── */
     .main {
-      display: grid;
-      grid-template-columns: 1fr 360px;
+      position: relative;
+      z-index: 1;
+      display: flex;
       flex: 1;
       min-height: 0;
       overflow: hidden;
@@ -65,24 +103,37 @@
 
     /* ── LEFT — SLIDERS ─────────────────────── */
     .left {
-      padding: 24px 28px 20px;
+      width: 56%;
+      min-width: 280px;
+      max-width: 82%;
+      display: flex;
+      flex-direction: column;
       overflow-y: auto;
-      border-right: 1px solid var(--border);
+      overflow-x: hidden;
+      padding: 20px 20px 16px;
+      background: rgba(20,24,32,0.82);
+      backdrop-filter: blur(10px);
+      flex-shrink: 0;
     }
+    .left::-webkit-scrollbar { width: 3px; }
+    .left::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
 
+    /* Group headings — BIG & NEON */
     .group-label {
-      font-size: 0.62rem;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--text-3);
-      margin-bottom: 20px;
+      font-size: 1.05rem;
+      font-weight: 800;
+      letter-spacing: 0.01em;
+      color: var(--neon);
+      margin-bottom: 14px;
+      text-shadow: 0 0 22px rgba(200,242,65,0.45), 0 0 6px rgba(200,242,65,0.25);
+      line-height: 1;
     }
 
     .sliders-row {
       display: flex;
       gap: 0;
       align-items: flex-end;
+      margin-bottom: 4px;
     }
 
     /* Individual slider column */
@@ -91,31 +142,25 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 6px;
+      gap: 4px;
       position: relative;
     }
 
-    /* Coupling glow ring on slider */
-    .sl-col.coupled .sl-track-outer::after {
-      opacity: 1;
-    }
-
     .sl-val {
-      font-size: 1.05rem;
+      font-size: 1rem;
       font-weight: 700;
       color: var(--text-1);
       line-height: 1;
       font-variant-numeric: tabular-nums;
     }
 
-    /* Effective delta indicator */
     .sl-delta {
-      font-size: 0.6rem;
+      font-size: 0.58rem;
       font-weight: 600;
-      height: 14px;
-      line-height: 14px;
-      padding: 0 4px;
-      border-radius: 4px;
+      height: 13px;
+      line-height: 13px;
+      padding: 0 3px;
+      border-radius: 3px;
       background: rgba(255,190,0,0.15);
       color: #FBBF24;
       opacity: 0;
@@ -123,23 +168,23 @@
     }
     .sl-delta.visible { opacity: 1; }
 
-    /* Track container */
+    /* Track outer — tighter & taller */
     .sl-track-outer {
       position: relative;
-      width: 34px;
-      height: 160px;
+      width: 36px;
+      height: 150px;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: ns-resize;
       user-select: none;
     }
-    /* glow ring */
+    /* coupling glow ring */
     .sl-track-outer::after {
       content: '';
       position: absolute;
-      inset: -4px;
-      border-radius: 12px;
+      inset: -3px;
+      border-radius: 10px;
       opacity: 0;
       transition: opacity 0.3s;
       pointer-events: none;
@@ -147,30 +192,30 @@
     .sl-col.coupled .sl-track-outer::after {
       opacity: 1;
       border: 1.5px solid var(--sl-color);
-      box-shadow: 0 0 12px var(--sl-color);
+      box-shadow: 0 0 10px var(--sl-color);
       filter: opacity(0.4);
     }
 
+    /* Track — thicker (8px) */
     .sl-track {
       position: absolute;
       left: 50%;
       transform: translateX(-50%);
-      width: 4px;
+      width: 8px;
       height: 100%;
-      background: rgba(255,255,255,0.06);
-      border-radius: 3px;
+      background: rgba(255,255,255,0.07);
+      border-radius: 4px;
       overflow: visible;
     }
     .sl-fill {
       position: absolute;
       bottom: 0; left: 0; right: 0;
-      border-radius: 3px;
-      transition: height 0.06s, background 0.2s;
+      border-radius: 4px;
+      transition: height 0.06s;
     }
-    /* effective value line */
     .sl-eff-mark {
       position: absolute;
-      left: -8px; right: -8px;
+      left: -6px; right: -6px;
       height: 2px;
       border-radius: 1px;
       background: #FBBF24;
@@ -180,49 +225,72 @@
     }
     .sl-eff-mark.visible { opacity: 0.75; }
 
+    /* Thumb — bigger (22px) */
     .sl-thumb {
       position: absolute;
       left: 50%;
-      width: 18px;
-      height: 18px;
+      width: 22px;
+      height: 22px;
       border-radius: 50%;
       transform: translate(-50%, 50%);
-      transition: bottom 0.06s, box-shadow 0.2s;
+      transition: bottom 0.06s;
       cursor: ns-resize;
+      border: 2px solid rgba(255,255,255,0.25);
     }
-    .sl-thumb:hover, .sl-thumb.dragging {
-      filter: brightness(1.2);
-    }
+    .sl-thumb:hover, .sl-thumb.dragging { filter: brightness(1.25); }
 
     .sl-label {
-      font-size: 0.59rem;
-      color: var(--text-2);
+      font-size: 0.56rem;
+      font-weight: 500;
       text-align: center;
-      line-height: 1.35;
-      max-width: 58px;
+      line-height: 1.3;
+      max-width: 52px;
     }
 
-    /* Coupling connector area between groups */
-    .coupling-bridge {
+    /* Bridge */
+    .coupling-bridge { margin: 10px 0; }
+    .coupling-svg { width: 100%; height: 40px; overflow: visible; }
+
+    /* ── DIVIDER ─────────────────────────────── */
+    .divider {
+      width: 5px;
+      background: var(--border);
+      cursor: col-resize;
+      flex-shrink: 0;
+      transition: background 0.15s;
       position: relative;
-      margin: 16px 0;
+      z-index: 5;
     }
-    .coupling-svg {
-      width: 100%;
-      height: 48px;
-      overflow: visible;
+    .divider::after {
+      content: '⋮';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: var(--text-3);
+      font-size: 14px;
+      line-height: 1;
+      pointer-events: none;
+    }
+    .divider:hover, .divider.dragging {
+      background: rgba(200,242,65,0.3);
     }
 
     /* ── RIGHT PANEL ─────────────────────────── */
     .right {
+      flex: 1;
+      min-width: 240px;
       display: flex;
       flex-direction: column;
       overflow-y: auto;
+      background: rgba(20,24,32,0.75);
+      backdrop-filter: blur(10px);
     }
+    .right::-webkit-scrollbar { width: 3px; }
+    .right::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
 
-    /* Radar */
     .radar-sec {
-      padding: 20px 22px 16px;
+      padding: 16px 18px 12px;
       border-bottom: 1px solid var(--border);
     }
     .sec-label {
@@ -231,24 +299,41 @@
       letter-spacing: 0.1em;
       text-transform: uppercase;
       color: var(--text-3);
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
     #radarSvg { width: 100%; height: auto; display: block; }
 
-    /* Coupling cards */
+    .radar-legend {
+      display: flex;
+      gap: 12px;
+      margin-top: 6px;
+      justify-content: center;
+    }
+    .radar-legend span {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.63rem;
+      color: var(--text-2);
+    }
+    .leg-line { width: 16px; height: 2px; border-radius: 1px; }
+    .leg-line.dashed {
+      background: repeating-linear-gradient(90deg,#FBBF24 0,#FBBF24 4px,transparent 4px,transparent 7px);
+    }
+
     .coupling-sec {
-      padding: 16px 22px;
+      padding: 12px 18px;
       border-bottom: 1px solid var(--border);
     }
     .ci {
       display: flex;
-      gap: 10px;
+      gap: 9px;
       align-items: flex-start;
-      padding: 10px 12px;
+      padding: 9px 11px;
       border-radius: var(--radius);
       border: 1px solid var(--border);
-      margin-bottom: 8px;
-      opacity: 0.38;
+      margin-bottom: 7px;
+      opacity: 0.35;
       transition: opacity 0.3s, border-color 0.3s, background 0.3s;
     }
     .ci.on {
@@ -257,163 +342,127 @@
       background: rgba(var(--ci-rgb), 0.07);
     }
     .ci-dot {
-      width: 8px; height: 8px;
+      width: 7px; height: 7px;
       border-radius: 50%;
       background: var(--ci-color);
       flex-shrink: 0;
       margin-top: 4px;
     }
-    .ci-name { font-size: 0.74rem; font-weight: 600; }
-    .ci-desc { font-size: 0.67rem; color: var(--text-2); margin-top: 2px; line-height: 1.45; }
+    .ci-name { font-size: 0.72rem; font-weight: 600; }
+    .ci-desc { font-size: 0.65rem; color: var(--text-2); margin-top: 2px; line-height: 1.4; }
 
-    /* Load bar */
-    .load-sec { padding: 14px 22px 18px; }
+    .load-sec { padding: 12px 18px 14px; }
     .load-bar-bg {
       height: 7px;
-      background: var(--surf2);
+      background: rgba(255,255,255,0.06);
       border-radius: 4px;
       overflow: hidden;
-      margin-bottom: 7px;
+      margin-bottom: 6px;
     }
-    .load-bar-fill {
-      height: 100%;
-      border-radius: 4px;
-      transition: width 0.25s, background 0.25s;
-    }
+    .load-bar-fill { height: 100%; border-radius: 4px; transition: width 0.25s, background 0.25s; }
     .load-row {
       display: flex;
       justify-content: space-between;
-      font-size: 0.67rem;
+      font-size: 0.66rem;
       color: var(--text-2);
     }
     .load-val { font-weight: 700; }
 
-    /* Reset */
-    .btn-theorie {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 7px;
-      margin: 0 22px 8px;
-      padding: 9px 0;
-      background: rgba(91,138,240,0.1);
-      border: 1px solid rgba(91,138,240,0.3);
-      border-radius: var(--radius);
-      color: #5B8AF0;
-      font-size: 0.75rem;
-      font-weight: 600;
-      font-family: inherit;
-      text-decoration: none;
-      transition: all 0.15s;
-    }
-    .btn-theorie:hover { background: rgba(91,138,240,0.18); border-color: rgba(91,138,240,0.5); }
-
-    .app-footer {
-      text-align: center;
-      padding: 0 22px 16px;
-      font-size: 0.63rem;
-      color: var(--text-3);
-    }
-
     .btn-reset {
       display: block;
-      margin: 0 22px 8px;
+      margin: 0 18px 6px;
       padding: 8px 0;
-      background: var(--surf2);
+      background: rgba(255,255,255,0.04);
       border: 1px solid var(--border);
       border-radius: var(--radius);
       color: var(--text-2);
-      font-size: 0.75rem;
+      font-size: 0.74rem;
       font-family: inherit;
       cursor: pointer;
       transition: all 0.15s;
       text-align: center;
     }
-    .btn-reset:hover { background: rgba(255,255,255,0.07); color: var(--text-1); }
+    .btn-reset:hover { background: rgba(255,255,255,0.08); color: var(--text-1); }
 
-    /* Legend in radar */
-    .radar-legend {
-      display: flex;
-      gap: 14px;
-      margin-top: 8px;
-      justify-content: center;
-    }
-    .radar-legend span {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      font-size: 0.65rem;
-      color: var(--text-2);
-    }
-    .leg-line {
-      width: 18px;
-      height: 2px;
-      border-radius: 1px;
-    }
-    .leg-line.dashed {
-      background: repeating-linear-gradient(90deg,#FBBF24 0,#FBBF24 4px,transparent 4px,transparent 7px);
+    .app-footer {
+      text-align: center;
+      padding: 6px 18px 14px;
+      font-size: 0.61rem;
+      color: var(--text-3);
     }
   </style>
 </head>
 <body>
 
+<!-- Particle Nebula -->
+<canvas id="nebula"></canvas>
+
+<!-- Header -->
 <div class="hdr">
-  <h1>KAR-Modell – Koordinations-Anforderungs-Regler</h1>
-  <p>nach Neumaier et al. (2009) · interaktives Anforderungsprofil</p>
+  <h1>KAR-Reglermodell</h1>
+  <p>nach Neumaier et al. (2009)</p>
+  <div class="hdr-gap"></div>
+  <a href="theorie.html" class="btn-theorie">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M2 3h12M2 7h8M2 11h10"/>
+      <circle cx="13" cy="11" r="2.5"/>
+      <path d="M13 9v-.5M13 13v.5M11 11h-.5M15 11h.5"/>
+    </svg>
+    Praxis-Theorie-Verknüpfung
+  </a>
 </div>
 
+<!-- Main: resizable split -->
 <div class="main">
 
-  <!-- ═══ LEFT: SLIDERS ═══ -->
-  <div class="left">
+  <!-- LEFT: Sliders -->
+  <div class="left" id="leftPanel">
     <div class="group-label">Druckbedingungen</div>
     <div class="sliders-row" id="rowDruck"></div>
 
-    <!-- SVG coupling bridge drawn by JS -->
     <div class="coupling-bridge">
-      <svg class="coupling-svg" id="bridgeSvg" viewBox="0 0 600 48" preserveAspectRatio="none"></svg>
+      <svg class="coupling-svg" id="bridgeSvg" viewBox="0 0 600 40" preserveAspectRatio="none"></svg>
     </div>
 
     <div class="group-label">Informationsanforderungen</div>
     <div class="sliders-row" id="rowInfo"></div>
   </div>
 
-  <!-- ═══ RIGHT: VIZ ═══ -->
-  <div class="right">
+  <!-- Divider -->
+  <div class="divider" id="divider"></div>
 
+  <!-- RIGHT: Viz -->
+  <div class="right">
     <div class="radar-sec">
       <div class="sec-label">Anforderungsprofil</div>
       <svg id="radarSvg" viewBox="0 0 320 290" xmlns="http://www.w3.org/2000/svg"></svg>
       <div class="radar-legend">
         <span><div class="leg-line" style="background:#5B8AF0;"></div>Eingestellt</span>
-        <span><div class="leg-line dashed"></div>Effektiv (mit Wechselwirkungen)</span>
+        <span><div class="leg-line dashed"></div>Effektiv</span>
       </div>
     </div>
 
     <div class="coupling-sec">
       <div class="sec-label">Wechselwirkungen</div>
-
       <div class="ci" id="ci-bel" style="--ci-color:#22C55E;--ci-rgb:34,197,94;">
         <div class="ci-dot"></div>
         <div>
           <div class="ci-name">Belastungs-Amplifikation</div>
-          <div class="ci-desc">Hoher Belastungsdruck (≥ 7) verstärkt alle übrigen Druckbedingungen — physische Ermüdung reduziert die koordinative Kapazität.</div>
+          <div class="ci-desc">Belastungsdruck ≥ 7 verstärkt alle übrigen Druckbedingungen.</div>
         </div>
       </div>
-
       <div class="ci" id="ci-zp" style="--ci-color:#F97316;--ci-rgb:249,115,22;">
         <div class="ci-dot"></div>
         <div>
           <div class="ci-name">Speed-Accuracy-Dilemma</div>
-          <div class="ci-desc">Zeitdruck und Präzisionsdruck ab ≥ 6 verstärken sich gegenseitig — schnelles und präzises Handeln gleichzeitig steigert die Anforderung überproportional.</div>
+          <div class="ci-desc">Zeit- und Präzisionsdruck ≥ 6 bedingen sich gegenseitig überproportional.</div>
         </div>
       </div>
-
       <div class="ci" id="ci-kx" style="--ci-color:#A855F7;--ci-rgb:168,85,247;">
         <div class="ci-dot"></div>
         <div>
           <div class="ci-name">Kognitive Informationsüberlastung</div>
-          <div class="ci-desc">Viele aktive Informationskanäle (≥ 4 auf ≥ 6) erhöhen den Komplexitätsdruck zusätzlich — mehr Kanäle = mehr parallele Verarbeitung.</div>
+          <div class="ci-desc">≥ 4 Informationskanäle auf ≥ 6 erhöhen den Komplexitätsdruck.</div>
         </div>
       </div>
     </div>
@@ -429,12 +478,6 @@
     </div>
 
     <button class="btn-reset" onclick="resetAll()">↺ Alles zurücksetzen</button>
-
-    <a href="theorie.html" class="btn-theorie">
-      <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h12M2 7h8M2 11h10"/><circle cx="13" cy="11" r="2.5"/><path d="M13 9v-.5M13 13v.5M11 11h-.5M15 11h.5"/></svg>
-      Praxis-Theorie-Verknüpfung
-    </a>
-
     <footer class="app-footer">© 2026 Ralf Duwenbeck · V1.1</footer>
   </div>
 
@@ -442,14 +485,139 @@
 
 <script>
 // ═══════════════════════════════════════════
-//  DIMENSION DEFINITIONS
+//  PARTICLE NEBULA
+// ═══════════════════════════════════════════
+(function () {
+  const canvas = document.getElementById('nebula');
+  const ctx    = canvas.getContext('2d');
+  let particles = [];
+  let mouse  = { x: 0, y: 0 };
+  let target = { x: 0, y: 0 };
+  const COUNT   = 90;
+  const PALETTE = [
+    [100,120,230],[80,105,210],[130,95,215],[65,145,225],[110,130,200]
+  ];
+
+  function resize() {
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+    initParticles();
+  }
+
+  function initParticles() {
+    particles = Array.from({ length: COUNT }, () => {
+      const depth = 0.2 + Math.random() * 0.8;
+      const size  = (6 + Math.random() * 22) * (0.4 + depth * 0.6);
+      return {
+        bx: Math.random() * canvas.width,
+        by: Math.random() * canvas.height,
+        vx: (Math.random() - 0.5) * 0.12,
+        vy: (Math.random() - 0.5) * 0.12,
+        size, depth,
+        alpha:       0.04 + Math.random() * 0.16,
+        alphaTarget: 0.04 + Math.random() * 0.16,
+        pulseIn:     Math.random() * 10,
+        colorIdx:    Math.floor(Math.random() * 5),
+      };
+    });
+  }
+
+  let last = 0;
+  function draw(ts) {
+    const dt = Math.min(ts - last, 50);
+    last = ts;
+    mouse.x += (target.x - mouse.x) * 0.04;
+    mouse.y += (target.y - mouse.y) * 0.04;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const cx = canvas.width  / 2;
+    const cy = canvas.height / 2;
+    particles.forEach(p => {
+      p.bx += p.vx * (dt / 16);
+      p.by += p.vy * (dt / 16);
+      if (p.bx < -60) p.bx = canvas.width  + 60;
+      if (p.bx > canvas.width  + 60) p.bx = -60;
+      if (p.by < -60) p.by = canvas.height + 60;
+      if (p.by > canvas.height + 60) p.by = -60;
+      const px = p.bx + (mouse.x - cx) * p.depth * 0.018;
+      const py = p.by + (mouse.y - cy) * p.depth * 0.018;
+      p.pulseIn -= dt * 0.001;
+      if (p.pulseIn <= 0) {
+        p.alphaTarget = 0.05 + Math.random() * 0.18;
+        p.pulseIn = 3 + Math.random() * 7;
+      }
+      p.alpha += (p.alphaTarget - p.alpha) * Math.min(0.006 * dt, 0.3);
+      const col  = PALETTE[p.colorIdx];
+      const grad = ctx.createRadialGradient(px, py, 0, px, py, p.size);
+      grad.addColorStop(0,   `rgba(${col[0]},${col[1]},${col[2]},${p.alpha})`);
+      grad.addColorStop(0.5, `rgba(${col[0]},${col[1]},${col[2]},${p.alpha * 0.4})`);
+      grad.addColorStop(1,   `rgba(${col[0]},${col[1]},${col[2]},0)`);
+      ctx.beginPath();
+      ctx.arc(px, py, p.size, 0, Math.PI * 2);
+      ctx.fillStyle = grad;
+      ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+
+  window.addEventListener('resize', resize);
+  window.addEventListener('mousemove', e => { target.x = e.clientX; target.y = e.clientY; });
+  resize();
+  requestAnimationFrame(draw);
+})();
+
+// ═══════════════════════════════════════════
+//  RESIZABLE DIVIDER
+// ═══════════════════════════════════════════
+(function () {
+  const divider = document.getElementById('divider');
+  const left    = document.getElementById('leftPanel');
+  const main    = document.querySelector('.main');
+  let dragging  = false;
+
+  divider.addEventListener('mousedown', e => {
+    dragging = true;
+    divider.classList.add('dragging');
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    const rect = main.getBoundingClientRect();
+    const pct  = ((e.clientX - rect.left) / rect.width) * 100;
+    left.style.width = Math.min(82, Math.max(25, pct)) + '%';
+  });
+  document.addEventListener('mouseup', () => {
+    if (!dragging) return;
+    dragging = false;
+    divider.classList.remove('dragging');
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+  });
+
+  // Touch support
+  divider.addEventListener('touchstart', e => {
+    dragging = true;
+    e.preventDefault();
+  }, { passive: false });
+  document.addEventListener('touchmove', e => {
+    if (!dragging) return;
+    const rect = main.getBoundingClientRect();
+    const pct  = ((e.touches[0].clientX - rect.left) / rect.width) * 100;
+    left.style.width = Math.min(82, Math.max(25, pct)) + '%';
+  }, { passive: false });
+  document.addEventListener('touchend', () => { dragging = false; });
+})();
+
+// ═══════════════════════════════════════════
+//  DIMENSIONS
 // ═══════════════════════════════════════════
 const DRUCK = [
-  { id:'praez',  label:'Präzisionsdruck',  short:'Präzision',  color:'#EF4444' },
-  { id:'zeit',   label:'Zeitdruck',         short:'Zeitdruck',  color:'#F97316' },
-  { id:'komp',   label:'Komplexitätsdruck', short:'Komplexität',color:'#A855F7' },
-  { id:'situ',   label:'Situationsdruck',   short:'Situation',  color:'#14B8A6' },
-  { id:'bel',    label:'Belastungsdruck',   short:'Belastung',  color:'#22C55E' },
+  { id:'praez', label:'Präzisionsdruck',  short:'Präzision',  color:'#EF4444' },
+  { id:'zeit',  label:'Zeitdruck',         short:'Zeitdruck',  color:'#F97316' },
+  { id:'komp',  label:'Komplexitätsdruck', short:'Komplexität',color:'#A855F7' },
+  { id:'situ',  label:'Situationsdruck',   short:'Situation',  color:'#14B8A6' },
+  { id:'bel',   label:'Belastungsdruck',   short:'Belastung',  color:'#22C55E' },
 ];
 const INFO = [
   { id:'opt',  label:'Optisch',       short:'Optisch',   color:'#3B82F6' },
@@ -484,7 +652,8 @@ function buildSliders(dims, rowId) {
         <div class="sl-track">
           <div class="sl-fill" id="fill-${d.id}" style="background:${d.color};height:44%"></div>
           <div class="sl-eff-mark" id="eff-${d.id}"></div>
-          <div class="sl-thumb" id="th-${d.id}" style="background:${d.color};box-shadow:0 0 8px ${d.color}44;bottom:44%"></div>
+          <div class="sl-thumb" id="th-${d.id}"
+               style="background:${d.color};box-shadow:0 0 10px ${d.color}55;bottom:44%"></div>
         </div>
       </div>
       <div class="sl-label" style="color:${d.color}">${d.short}</div>
@@ -500,16 +669,15 @@ function attachDrag(id, el) {
   function valueFromY(clientY) {
     const rect = el.getBoundingClientRect();
     const relY = rect.bottom - clientY;
-    const pct  = Math.max(0, Math.min(1, relY / rect.height));
-    return Math.round(1 + pct * 9);
+    return Math.round(Math.max(1, Math.min(10, 1 + (relY / rect.height) * 9)));
   }
 
   function setV(v) {
     vals[id] = v;
     const pct = (v - 1) / 9 * 100;
-    document.getElementById('v-' + id).textContent = v;
-    document.getElementById('fill-' + id).style.height = pct + '%';
-    document.getElementById('th-' + id).style.bottom   = pct + '%';
+    document.getElementById('v-'    + id).textContent   = v;
+    document.getElementById('fill-' + id).style.height  = pct + '%';
+    document.getElementById('th-'   + id).style.bottom  = pct + '%';
     update();
   }
 
@@ -519,10 +687,8 @@ function attachDrag(id, el) {
     setV(valueFromY(e.clientY));
     e.preventDefault();
   });
-  document.addEventListener('mousemove', e => {
-    if (dragging) setV(valueFromY(e.clientY));
-  });
-  document.addEventListener('mouseup', () => {
+  document.addEventListener('mousemove', e => { if (dragging) setV(valueFromY(e.clientY)); });
+  document.addEventListener('mouseup',   () => {
     dragging = false;
     el.querySelector('.sl-thumb')?.classList.remove('dragging');
   });
@@ -537,7 +703,6 @@ function attachDrag(id, el) {
   }, { passive: false });
   document.addEventListener('touchend', () => { dragging = false; });
 
-  // Click on track area sets value immediately
   el.addEventListener('click', e => setV(valueFromY(e.clientY)));
 }
 
@@ -545,173 +710,149 @@ buildSliders(DRUCK, 'rowDruck');
 buildSliders(INFO,  'rowInfo');
 
 // ═══════════════════════════════════════════
-//  COUPLING / EFFECTIVE VALUES
+//  COUPLING
 // ═══════════════════════════════════════════
 function computeEffective() {
   const e = { ...vals };
-
-  // 1. Belastungs-Amplifikation: Belastung > 5 erhöht andere Druckbedingungen
   const amp = (vals.bel - 5) * 0.22;
   ['praez','zeit','komp','situ'].forEach(k => {
     e[k] = Math.min(10, Math.max(1, vals[k] + amp));
   });
-
-  // 2. Speed-Accuracy-Dilemma: gegenseitige Verstärkung
   if (vals.zeit >= 6 && vals.praez >= 6) {
     const boost = ((vals.zeit + vals.praez) / 2 - 5.5) * 0.3;
     e.zeit  = Math.min(10, e.zeit  + boost);
     e.praez = Math.min(10, e.praez + boost);
   }
-
-  // 3. Kognitive Überlastung: aktive Info-Kanäle erhöhen Komplexitätsdruck
   const activeInfo = INFO.filter(d => vals[d.id] >= 6).length;
   e.komp = Math.min(10, e.komp + Math.max(0, activeInfo - 2) * 0.4);
-
   return e;
 }
 
 // ═══════════════════════════════════════════
-//  UPDATE UI
+//  UPDATE
 // ═══════════════════════════════════════════
 function update() {
   const eff = computeEffective();
 
-  // Delta indicators on affected sliders
   ['praez','zeit','komp','situ'].forEach(k => {
     const diff  = eff[k] - vals[k];
-    const el    = document.getElementById('delta-' + k);
-    const effEl = document.getElementById('eff-' + k);
+    const elD   = document.getElementById('delta-' + k);
+    const effEl = document.getElementById('eff-'   + k);
     if (Math.abs(diff) >= 0.15) {
-      el.textContent = (diff > 0 ? '+' : '') + diff.toFixed(1);
-      el.classList.add('visible');
-      // Effective marker position
-      const pct = (eff[k] - 1) / 9 * 100;
-      effEl.style.bottom = pct + '%';
+      elD.textContent = (diff > 0 ? '+' : '') + diff.toFixed(1);
+      elD.classList.add('visible');
+      effEl.style.bottom = ((eff[k] - 1) / 9 * 100) + '%';
       effEl.classList.add('visible');
     } else {
-      el.classList.remove('visible');
+      elD.classList.remove('visible');
       effEl.classList.remove('visible');
     }
   });
 
-  // Coupling glow on sliders
   const belHigh  = vals.bel  >= 7;
   const zpActive = vals.zeit >= 6 && vals.praez >= 6;
-  ['praez','zeit','komp','situ'].forEach(k => {
-    document.getElementById('col-' + k).classList.toggle('coupled', belHigh);
-  });
+  ['praez','zeit','komp','situ'].forEach(k =>
+    document.getElementById('col-' + k).classList.toggle('coupled', belHigh));
   document.getElementById('col-bel').classList.toggle('coupled', belHigh);
   if (zpActive) {
     document.getElementById('col-zeit').classList.add('coupled');
     document.getElementById('col-praez').classList.add('coupled');
   }
 
-  // Coupling cards
   const activeInfo = INFO.filter(d => vals[d.id] >= 6).length;
   document.getElementById('ci-bel').classList.toggle('on', belHigh);
   document.getElementById('ci-zp').classList.toggle('on',  zpActive);
   document.getElementById('ci-kx').classList.toggle('on',  vals.komp >= 6 && activeInfo >= 4);
 
-  drawBridge(eff, belHigh, zpActive);
+  drawBridge(belHigh, zpActive);
   drawRadar(eff);
   drawLoad(eff);
 }
 
 // ═══════════════════════════════════════════
-//  COUPLING BRIDGE SVG (between the groups)
+//  BRIDGE
 // ═══════════════════════════════════════════
-function drawBridge(eff, belHigh, zpActive) {
+function drawBridge(belHigh, zpActive) {
   const svg = document.getElementById('bridgeSvg');
   svg.innerHTML = '';
-  const W = 600, H = 48;
+  const W = 600, H = 40;
 
-  // helper: get slot x of dim index within group
   function slotX(idx, total) {
-    const segW = W / total;
-    return segW * idx + segW / 2;
+    return (W / total) * idx + (W / total) / 2;
   }
 
   if (belHigh) {
-    // Belastungsdruck (idx 4) → connects to Präzision(0), Zeit(1), Komp(2), Situ(3)
     const bX = slotX(4, 5);
     [0,1,2,3].forEach(i => {
-      const tX = slotX(i, 5);
-      drawArc(svg, bX, H, tX, 0, '#22C55E', 0.5 + (vals.bel - 7) * 0.08, W);
+      const tX  = slotX(i, 5);
+      const mid = (bX + tX) / 2;
+      const p   = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      p.setAttribute('d', `M ${bX} ${H} Q ${mid} 0 ${tX} ${H}`);
+      p.setAttribute('fill', 'none');
+      p.setAttribute('stroke', '#22C55E');
+      p.setAttribute('stroke-width', '1.5');
+      p.setAttribute('opacity', String(0.45 + (vals.bel - 7) * 0.08));
+      p.setAttribute('stroke-dasharray', '5,4');
+      svg.appendChild(p);
     });
   }
 
   if (zpActive) {
-    const zX = slotX(1, 5);
-    const pX = slotX(0, 5);
-    drawArc(svg, zX, H/2, pX, H/2, '#F97316', 0.7, W);
+    const zX  = slotX(1, 5);
+    const pX  = slotX(0, 5);
+    const mid = (zX + pX) / 2;
+    const p   = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    p.setAttribute('d', `M ${zX} ${H/2} Q ${mid} 2 ${pX} ${H/2}`);
+    p.setAttribute('fill', 'none');
+    p.setAttribute('stroke', '#F97316');
+    p.setAttribute('stroke-width', '2');
+    p.setAttribute('opacity', '0.75');
+    svg.appendChild(p);
   }
 }
 
-function drawArc(svg, x1, y1, x2, y2, color, opacity, W) {
-  const cx = (x1 + x2) / 2;
-  const cy = Math.min(y1, y2) - 16;
-  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-  path.setAttribute('d', `M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}`);
-  path.setAttribute('fill', 'none');
-  path.setAttribute('stroke', color);
-  path.setAttribute('stroke-width', '1.5');
-  path.setAttribute('opacity', opacity);
-  path.setAttribute('stroke-dasharray', '5,4');
-  svg.appendChild(path);
-}
-
 // ═══════════════════════════════════════════
-//  RADAR CHART
+//  RADAR
 // ═══════════════════════════════════════════
 function drawRadar(eff) {
   const svg = document.getElementById('radarSvg');
   svg.innerHTML = '';
   const ns = 'http://www.w3.org/2000/svg';
-  const CX = 160, CY = 145, R = 105;
-  const N = ALL.length; // 11
+  const CX = 160, CY = 145, R = 105, N = ALL.length;
 
   function angle(i) { return (i / N) * 2 * Math.PI - Math.PI / 2; }
   function pt(v, i, r) {
-    const a = angle(i);
-    const rv = (v / 10) * r;
+    const a = angle(i), rv = (v / 10) * r;
     return [CX + rv * Math.cos(a), CY + rv * Math.sin(a)];
   }
-
   const mk = (tag, attrs) => {
     const el = document.createElementNS(ns, tag);
-    Object.entries(attrs).forEach(([k,v]) => el.setAttribute(k,v));
+    Object.entries(attrs).forEach(([k, v]) => el.setAttribute(k, v));
     return el;
   };
 
-  // Grid rings
   [2,4,6,8,10].forEach(v => {
     svg.appendChild(mk('circle', { cx:CX, cy:CY, r:(v/10)*R, fill:'none', stroke:'rgba(255,255,255,0.05)', 'stroke-width':'1' }));
     if (v < 10) {
       const t = mk('text', { x:CX+3, y:CY-(v/10)*R+4, fill:'rgba(255,255,255,0.18)', 'font-size':'8', 'font-family':'Inter,sans-serif' });
-      t.textContent = v;
-      svg.appendChild(t);
+      t.textContent = v; svg.appendChild(t);
     }
   });
 
-  // Axes + labels
   ALL.forEach((d, i) => {
     const [ex, ey] = pt(10, i, R);
     svg.appendChild(mk('line', { x1:CX, y1:CY, x2:ex, y2:ey, stroke:'rgba(255,255,255,0.07)', 'stroke-width':'1' }));
     const [lx, ly] = pt(10, i, R + 20);
     const t = mk('text', { x:lx, y:ly, fill:d.color, 'font-size':'8.5', 'font-family':'Inter,sans-serif', 'font-weight':'500', 'text-anchor':'middle', 'dominant-baseline':'middle' });
-    t.textContent = d.short;
-    svg.appendChild(t);
+    t.textContent = d.short; svg.appendChild(t);
   });
 
-  // Effective polygon (dashed amber)
   const effPts = ALL.map((d,i) => pt(eff[d.id], i, R).join(',')).join(' ');
   svg.appendChild(mk('polygon', { points:effPts, fill:'rgba(251,191,36,0.06)', stroke:'rgba(251,191,36,0.5)', 'stroke-width':'1.5', 'stroke-dasharray':'5,3' }));
 
-  // Set value polygon (solid blue)
   const setPts = ALL.map((d,i) => pt(vals[d.id], i, R).join(',')).join(' ');
   svg.appendChild(mk('polygon', { points:setPts, fill:'rgba(91,138,240,0.12)', stroke:'#5B8AF0', 'stroke-width':'2' }));
 
-  // Dots
   ALL.forEach((d, i) => {
     const [px, py] = pt(vals[d.id], i, R);
     svg.appendChild(mk('circle', { cx:px, cy:py, r:'3.5', fill:d.color }));
@@ -722,24 +863,18 @@ function drawRadar(eff) {
 //  LOAD BAR
 // ═══════════════════════════════════════════
 function drawLoad(eff) {
-  const allVals = ALL.map(d => eff[d.id]);
-  const mean = allVals.reduce((a,b) => a+b, 0) / allVals.length;
-  const pct  = ((mean - 1) / 9) * 100;
-
+  const mean = ALL.map(d => eff[d.id]).reduce((a,b) => a+b, 0) / ALL.length;
   const fill  = document.getElementById('loadFill');
   const label = document.getElementById('loadLabel');
-
-  fill.style.width = pct + '%';
-
+  fill.style.width = ((mean - 1) / 9 * 100) + '%';
   let txt, col;
   if (mean < 3)        { txt = 'Gering';    col = '#22C55E'; }
   else if (mean < 5.5) { txt = 'Mittel';    col = '#EAB308'; }
   else if (mean < 7.5) { txt = 'Hoch';      col = '#F97316'; }
   else                 { txt = 'Sehr hoch'; col = '#EF4444'; }
-
-  fill.style.background = col;
-  label.textContent = txt + ' (' + mean.toFixed(1) + ')';
-  label.style.color = col;
+  fill.style.background   = col;
+  label.textContent       = txt + ' (' + mean.toFixed(1) + ')';
+  label.style.color       = col;
 }
 
 // ═══════════════════════════════════════════
@@ -748,19 +883,16 @@ function drawLoad(eff) {
 function resetAll() {
   ALL.forEach(d => {
     vals[d.id] = 5;
-    document.getElementById('v-' + d.id).textContent = '5';
-    document.getElementById('fill-' + d.id).style.height = '44%';
-    document.getElementById('th-'   + d.id).style.bottom = '44%';
-    document.getElementById('delta-'+ d.id).classList.remove('visible');
-    document.getElementById('eff-'  + d.id).classList.remove('visible');
-    document.getElementById('col-'  + d.id).classList.remove('coupled');
+    document.getElementById('v-'     + d.id).textContent  = '5';
+    document.getElementById('fill-'  + d.id).style.height = '44%';
+    document.getElementById('th-'    + d.id).style.bottom = '44%';
+    document.getElementById('delta-' + d.id).classList.remove('visible');
+    document.getElementById('eff-'   + d.id).classList.remove('visible');
+    document.getElementById('col-'   + d.id).classList.remove('coupled');
   });
   update();
 }
 
-// ═══════════════════════════════════════════
-//  INIT
-// ═══════════════════════════════════════════
 update();
 </script>
 </body>
