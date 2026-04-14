@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KAR-Modell – Koordinations-Anforderungs-Regler</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:        #0D1117;
+      --surf:      #161B22;
+      --surf2:     #21262D;
+      --border:    rgba(255,255,255,0.08);
+      --border2:   rgba(255,255,255,0.15);
+      --text-1:    #E6EDF3;
+      --text-2:    #8B949E;
+      --text-3:    #484F58;
+      --radius:    10px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text-1);
+      -webkit-font-smoothing: antialiased;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ─────────────────────────────── */
+    .hdr {
+      padding: 14px 28px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      flex-shrink: 0;
+      background: rgba(22,27,34,0.95);
+      backdrop-filter: blur(10px);
+      position: sticky; top: 0; z-index: 50;
+    }
+    .hdr h1 { font-size: 1rem; font-weight: 600; letter-spacing: -0.02em; }
+    .hdr p  { font-size: 0.7rem; color: var(--text-3); }
+
+    /* ── MAIN GRID ───────────────────────────── */
+    .main {
+      display: grid;
+      grid-template-columns: 1fr 360px;
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    /* ── LEFT — SLIDERS ─────────────────────── */
+    .left {
+      padding: 24px 28px 20px;
+      overflow-y: auto;
+      border-right: 1px solid var(--border);
+    }
+
+    .group-label {
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      margin-bottom: 20px;
+    }
+
+    .sliders-row {
+      display: flex;
+      gap: 0;
+      align-items: flex-end;
+    }
+
+    /* Individual slider column */
+    .sl-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      position: relative;
+    }
+
+    /* Coupling glow ring on slider */
+    .sl-col.coupled .sl-track-outer::after {
+      opacity: 1;
+    }
+
+    .sl-val {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-1);
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Effective delta indicator */
+    .sl-delta {
+      font-size: 0.6rem;
+      font-weight: 600;
+      height: 14px;
+      line-height: 14px;
+      padding: 0 4px;
+      border-radius: 4px;
+      background: rgba(255,190,0,0.15);
+      color: #FBBF24;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .sl-delta.visible { opacity: 1; }
+
+    /* Track container */
+    .sl-track-outer {
+      position: relative;
+      width: 34px;
+      height: 160px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: ns-resize;
+      user-select: none;
+    }
+    /* glow ring */
+    .sl-track-outer::after {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 12px;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+    .sl-col.coupled .sl-track-outer::after {
+      opacity: 1;
+      border: 1.5px solid var(--sl-color);
+      box-shadow: 0 0 12px var(--sl-color);
+      filter: opacity(0.4);
+    }
+
+    .sl-track {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 4px;
+      height: 100%;
+      background: rgba(255,255,255,0.06);
+      border-radius: 3px;
+      overflow: visible;
+    }
+    .sl-fill {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      border-radius: 3px;
+      transition: height 0.06s, background 0.2s;
+    }
+    /* effective value line */
+    .sl-eff-mark {
+      position: absolute;
+      left: -8px; right: -8px;
+      height: 2px;
+      border-radius: 1px;
+      background: #FBBF24;
+      opacity: 0;
+      transition: bottom 0.2s, opacity 0.2s;
+      pointer-events: none;
+    }
+    .sl-eff-mark.visible { opacity: 0.75; }
+
+    .sl-thumb {
+      position: absolute;
+      left: 50%;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      transform: translate(-50%, 50%);
+      transition: bottom 0.06s, box-shadow 0.2s;
+      cursor: ns-resize;
+    }
+    .sl-thumb:hover, .sl-thumb.dragging {
+      filter: brightness(1.2);
+    }
+
+    .sl-label {
+      font-size: 0.59rem;
+      color: var(--text-2);
+      text-align: center;
+      line-height: 1.35;
+      max-width: 58px;
+    }
+
+    /* Coupling connector area between groups */
+    .coupling-bridge {
+      position: relative;
+      margin: 16px 0;
+    }
+    .coupling-svg {
+      width: 100%;
+      height: 48px;
+      overflow: visible;
+    }
+
+    /* ── RIGHT PANEL ─────────────────────────── */
+    .right {
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    /* Radar */
+    .radar-sec {
+      padding: 20px 22px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .sec-label {
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-3);
+      margin-bottom: 12px;
+    }
+    #radarSvg { width: 100%; height: auto; display: block; }
+
+    /* Coupling cards */
+    .coupling-sec {
+      padding: 16px 22px;
+      border-bottom: 1px solid var(--border);
+    }
+    .ci {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      padding: 10px 12px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      margin-bottom: 8px;
+      opacity: 0.38;
+      transition: opacity 0.3s, border-color 0.3s, background 0.3s;
+    }
+    .ci.on {
+      opacity: 1;
+      border-color: var(--ci-color);
+      background: rgba(var(--ci-rgb), 0.07);
+    }
+    .ci-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--ci-color);
+      flex-shrink: 0;
+      margin-top: 4px;
+    }
+    .ci-name { font-size: 0.74rem; font-weight: 600; }
+    .ci-desc { font-size: 0.67rem; color: var(--text-2); margin-top: 2px; line-height: 1.45; }
+
+    /* Load bar */
+    .load-sec { padding: 14px 22px 18px; }
+    .load-bar-bg {
+      height: 7px;
+      background: var(--surf2);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 7px;
+    }
+    .load-bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.25s, background 0.25s;
+    }
+    .load-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.67rem;
+      color: var(--text-2);
+    }
+    .load-val { font-weight: 700; }
+
+    /* Reset */
+    .btn-reset {
+      display: block;
+      margin: 0 22px 20px;
+      padding: 8px 0;
+      background: var(--surf2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text-2);
+      font-size: 0.75rem;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-align: center;
+    }
+    .btn-reset:hover { background: rgba(255,255,255,0.07); color: var(--text-1); }
+
+    /* Legend in radar */
+    .radar-legend {
+      display: flex;
+      gap: 14px;
+      margin-top: 8px;
+      justify-content: center;
+    }
+    .radar-legend span {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.65rem;
+      color: var(--text-2);
+    }
+    .leg-line {
+      width: 18px;
+      height: 2px;
+      border-radius: 1px;
+    }
+    .leg-line.dashed {
+      background: repeating-linear-gradient(90deg,#FBBF24 0,#FBBF24 4px,transparent 4px,transparent 7px);
+    }
+  </style>
+</head>
+<body>
+
+<div class="hdr">
+  <h1>KAR-Modell – Koordinations-Anforderungs-Regler</h1>
+  <p>nach Neumaier et al. (2009) · interaktives Anforderungsprofil</p>
+</div>
+
+<div class="main">
+
+  <!-- ═══ LEFT: SLIDERS ═══ -->
+  <div class="left">
+    <div class="group-label">Druckbedingungen</div>
+    <div class="sliders-row" id="rowDruck"></div>
+
+    <!-- SVG coupling bridge drawn by JS -->
+    <div class="coupling-bridge">
+      <svg class="coupling-svg" id="bridgeSvg" viewBox="0 0 600 48" preserveAspectRatio="none"></svg>
+    </div>
+
+    <div class="group-label">Informationsanforderungen</div>
+    <div class="sliders-row" id="rowInfo"></div>
+  </div>
+
+  <!-- ═══ RIGHT: VIZ ═══ -->
+  <div class="right">
+
+    <div class="radar-sec">
+      <div class="sec-label">Anforderungsprofil</div>
+      <svg id="radarSvg" viewBox="0 0 320 290" xmlns="http://www.w3.org/2000/svg"></svg>
+      <div class="radar-legend">
+        <span><div class="leg-line" style="background:#5B8AF0;"></div>Eingestellt</span>
+        <span><div class="leg-line dashed"></div>Effektiv (mit Wechselwirkungen)</span>
+      </div>
+    </div>
+
+    <div class="coupling-sec">
+      <div class="sec-label">Wechselwirkungen</div>
+
+      <div class="ci" id="ci-bel" style="--ci-color:#22C55E;--ci-rgb:34,197,94;">
+        <div class="ci-dot"></div>
+        <div>
+          <div class="ci-name">Belastungs-Amplifikation</div>
+          <div class="ci-desc">Hoher Belastungsdruck (≥ 7) verstärkt alle übrigen Druckbedingungen — physische Ermüdung reduziert die koordinative Kapazität.</div>
+        </div>
+      </div>
+
+      <div class="ci" id="ci-zp" style="--ci-color:#F97316;--ci-rgb:249,115,22;">
+        <div class="ci-dot"></div>
+        <div>
+          <div class="ci-name">Speed-Accuracy-Dilemma</div>
+          <div class="ci-desc">Zeitdruck und Präzisionsdruck ab ≥ 6 verstärken sich gegenseitig — schnelles und präzises Handeln gleichzeitig steigert die Anforderung überproportional.</div>
+        </div>
+      </div>
+
+      <div class="ci" id="ci-kx" style="--ci-color:#A855F7;--ci-rgb:168,85,247;">
+        <div class="ci-dot"></div>
+        <div>
+          <div class="ci-name">Kognitive Informationsüberlastung</div>
+          <div class="ci-desc">Viele aktive Informationskanäle (≥ 4 auf ≥ 6) erhöhen den Komplexitätsdruck zusätzlich — mehr Kanäle = mehr parallele Verarbeitung.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="load-sec">
+      <div class="sec-label">Koordinative Gesamtbelastung</div>
+      <div class="load-bar-bg"><div class="load-bar-fill" id="loadFill"></div></div>
+      <div class="load-row">
+        <span>Gering</span>
+        <span class="load-val" id="loadLabel">—</span>
+        <span>Sehr hoch</span>
+      </div>
+    </div>
+
+    <button class="btn-reset" onclick="resetAll()">↺ Alles zurücksetzen</button>
+  </div>
+
+</div><!-- /main -->
+
+<script>
+// ═══════════════════════════════════════════
+//  DIMENSION DEFINITIONS
+// ═══════════════════════════════════════════
+const DRUCK = [
+  { id:'praez',  label:'Präzisionsdruck',  short:'Präzision',  color:'#EF4444' },
+  { id:'zeit',   label:'Zeitdruck',         short:'Zeitdruck',  color:'#F97316' },
+  { id:'komp',   label:'Komplexitätsdruck', short:'Komplexität',color:'#A855F7' },
+  { id:'situ',   label:'Situationsdruck',   short:'Situation',  color:'#14B8A6' },
+  { id:'bel',    label:'Belastungsdruck',   short:'Belastung',  color:'#22C55E' },
+];
+const INFO = [
+  { id:'opt',  label:'Optisch',       short:'Optisch',   color:'#3B82F6' },
+  { id:'aku',  label:'Akustisch',     short:'Akustisch', color:'#EAB308' },
+  { id:'takt', label:'Taktil',        short:'Taktil',    color:'#EC4899' },
+  { id:'kin',  label:'Kinästhetisch', short:'Kinästh.',  color:'#F87171' },
+  { id:'vest', label:'Vestibulär',    short:'Vestib.',   color:'#22D3EE' },
+  { id:'glei', label:'Gleichgewicht', short:'Gleich.',   color:'#94A3B8' },
+];
+const ALL = [...DRUCK, ...INFO];
+
+// ═══════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════
+const vals = {};
+ALL.forEach(d => vals[d.id] = 5);
+
+// ═══════════════════════════════════════════
+//  BUILD SLIDERS
+// ═══════════════════════════════════════════
+function buildSliders(dims, rowId) {
+  const row = document.getElementById(rowId);
+  dims.forEach(d => {
+    const col = document.createElement('div');
+    col.className = 'sl-col';
+    col.id = 'col-' + d.id;
+    col.style.setProperty('--sl-color', d.color);
+    col.innerHTML = `
+      <div class="sl-val" id="v-${d.id}">5</div>
+      <div class="sl-delta" id="delta-${d.id}"></div>
+      <div class="sl-track-outer" id="to-${d.id}">
+        <div class="sl-track">
+          <div class="sl-fill" id="fill-${d.id}" style="background:${d.color};height:44%"></div>
+          <div class="sl-eff-mark" id="eff-${d.id}"></div>
+          <div class="sl-thumb" id="th-${d.id}" style="background:${d.color};box-shadow:0 0 8px ${d.color}44;bottom:44%"></div>
+        </div>
+      </div>
+      <div class="sl-label" style="color:${d.color}">${d.short}</div>
+    `;
+    row.appendChild(col);
+    attachDrag(d.id, col.querySelector('.sl-track-outer'));
+  });
+}
+
+function attachDrag(id, el) {
+  let dragging = false;
+
+  function valueFromY(clientY) {
+    const rect = el.getBoundingClientRect();
+    const relY = rect.bottom - clientY;
+    const pct  = Math.max(0, Math.min(1, relY / rect.height));
+    return Math.round(1 + pct * 9);
+  }
+
+  function setV(v) {
+    vals[id] = v;
+    const pct = (v - 1) / 9 * 100;
+    document.getElementById('v-' + id).textContent = v;
+    document.getElementById('fill-' + id).style.height = pct + '%';
+    document.getElementById('th-' + id).style.bottom   = pct + '%';
+    update();
+  }
+
+  el.addEventListener('mousedown', e => {
+    dragging = true;
+    el.querySelector('.sl-thumb').classList.add('dragging');
+    setV(valueFromY(e.clientY));
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove', e => {
+    if (dragging) setV(valueFromY(e.clientY));
+  });
+  document.addEventListener('mouseup', () => {
+    dragging = false;
+    el.querySelector('.sl-thumb')?.classList.remove('dragging');
+  });
+
+  el.addEventListener('touchstart', e => {
+    dragging = true;
+    setV(valueFromY(e.touches[0].clientY));
+    e.preventDefault();
+  }, { passive: false });
+  document.addEventListener('touchmove', e => {
+    if (dragging) setV(valueFromY(e.touches[0].clientY));
+  }, { passive: false });
+  document.addEventListener('touchend', () => { dragging = false; });
+
+  // Click on track area sets value immediately
+  el.addEventListener('click', e => setV(valueFromY(e.clientY)));
+}
+
+buildSliders(DRUCK, 'rowDruck');
+buildSliders(INFO,  'rowInfo');
+
+// ═══════════════════════════════════════════
+//  COUPLING / EFFECTIVE VALUES
+// ═══════════════════════════════════════════
+function computeEffective() {
+  const e = { ...vals };
+
+  // 1. Belastungs-Amplifikation: Belastung > 5 erhöht andere Druckbedingungen
+  const amp = (vals.bel - 5) * 0.22;
+  ['praez','zeit','komp','situ'].forEach(k => {
+    e[k] = Math.min(10, Math.max(1, vals[k] + amp));
+  });
+
+  // 2. Speed-Accuracy-Dilemma: gegenseitige Verstärkung
+  if (vals.zeit >= 6 && vals.praez >= 6) {
+    const boost = ((vals.zeit + vals.praez) / 2 - 5.5) * 0.3;
+    e.zeit  = Math.min(10, e.zeit  + boost);
+    e.praez = Math.min(10, e.praez + boost);
+  }
+
+  // 3. Kognitive Überlastung: aktive Info-Kanäle erhöhen Komplexitätsdruck
+  const activeInfo = INFO.filter(d => vals[d.id] >= 6).length;
+  e.komp = Math.min(10, e.komp + Math.max(0, activeInfo - 2) * 0.4);
+
+  return e;
+}
+
+// ═══════════════════════════════════════════
+//  UPDATE UI
+// ═══════════════════════════════════════════
+function update() {
+  const eff = computeEffective();
+
+  // Delta indicators on affected sliders
+  ['praez','zeit','komp','situ'].forEach(k => {
+    const diff  = eff[k] - vals[k];
+    const el    = document.getElementById('delta-' + k);
+    const effEl = document.getElementById('eff-' + k);
+    if (Math.abs(diff) >= 0.15) {
+      el.textContent = (diff > 0 ? '+' : '') + diff.toFixed(1);
+      el.classList.add('visible');
+      // Effective marker position
+      const pct = (eff[k] - 1) / 9 * 100;
+      effEl.style.bottom = pct + '%';
+      effEl.classList.add('visible');
+    } else {
+      el.classList.remove('visible');
+      effEl.classList.remove('visible');
+    }
+  });
+
+  // Coupling glow on sliders
+  const belHigh  = vals.bel  >= 7;
+  const zpActive = vals.zeit >= 6 && vals.praez >= 6;
+  ['praez','zeit','komp','situ'].forEach(k => {
+    document.getElementById('col-' + k).classList.toggle('coupled', belHigh);
+  });
+  document.getElementById('col-bel').classList.toggle('coupled', belHigh);
+  if (zpActive) {
+    document.getElementById('col-zeit').classList.add('coupled');
+    document.getElementById('col-praez').classList.add('coupled');
+  }
+
+  // Coupling cards
+  const activeInfo = INFO.filter(d => vals[d.id] >= 6).length;
+  document.getElementById('ci-bel').classList.toggle('on', belHigh);
+  document.getElementById('ci-zp').classList.toggle('on',  zpActive);
+  document.getElementById('ci-kx').classList.toggle('on',  vals.komp >= 6 && activeInfo >= 4);
+
+  drawBridge(eff, belHigh, zpActive);
+  drawRadar(eff);
+  drawLoad(eff);
+}
+
+// ═══════════════════════════════════════════
+//  COUPLING BRIDGE SVG (between the groups)
+// ═══════════════════════════════════════════
+function drawBridge(eff, belHigh, zpActive) {
+  const svg = document.getElementById('bridgeSvg');
+  svg.innerHTML = '';
+  const W = 600, H = 48;
+
+  // helper: get slot x of dim index within group
+  function slotX(idx, total) {
+    const segW = W / total;
+    return segW * idx + segW / 2;
+  }
+
+  if (belHigh) {
+    // Belastungsdruck (idx 4) → connects to Präzision(0), Zeit(1), Komp(2), Situ(3)
+    const bX = slotX(4, 5);
+    [0,1,2,3].forEach(i => {
+      const tX = slotX(i, 5);
+      drawArc(svg, bX, H, tX, 0, '#22C55E', 0.5 + (vals.bel - 7) * 0.08, W);
+    });
+  }
+
+  if (zpActive) {
+    const zX = slotX(1, 5);
+    const pX = slotX(0, 5);
+    drawArc(svg, zX, H/2, pX, H/2, '#F97316', 0.7, W);
+  }
+}
+
+function drawArc(svg, x1, y1, x2, y2, color, opacity, W) {
+  const cx = (x1 + x2) / 2;
+  const cy = Math.min(y1, y2) - 16;
+  const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  path.setAttribute('d', `M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}`);
+  path.setAttribute('fill', 'none');
+  path.setAttribute('stroke', color);
+  path.setAttribute('stroke-width', '1.5');
+  path.setAttribute('opacity', opacity);
+  path.setAttribute('stroke-dasharray', '5,4');
+  svg.appendChild(path);
+}
+
+// ═══════════════════════════════════════════
+//  RADAR CHART
+// ═══════════════════════════════════════════
+function drawRadar(eff) {
+  const svg = document.getElementById('radarSvg');
+  svg.innerHTML = '';
+  const ns = 'http://www.w3.org/2000/svg';
+  const CX = 160, CY = 145, R = 105;
+  const N = ALL.length; // 11
+
+  function angle(i) { return (i / N) * 2 * Math.PI - Math.PI / 2; }
+  function pt(v, i, r) {
+    const a = angle(i);
+    const rv = (v / 10) * r;
+    return [CX + rv * Math.cos(a), CY + rv * Math.sin(a)];
+  }
+
+  const mk = (tag, attrs) => {
+    const el = document.createElementNS(ns, tag);
+    Object.entries(attrs).forEach(([k,v]) => el.setAttribute(k,v));
+    return el;
+  };
+
+  // Grid rings
+  [2,4,6,8,10].forEach(v => {
+    svg.appendChild(mk('circle', { cx:CX, cy:CY, r:(v/10)*R, fill:'none', stroke:'rgba(255,255,255,0.05)', 'stroke-width':'1' }));
+    if (v < 10) {
+      const t = mk('text', { x:CX+3, y:CY-(v/10)*R+4, fill:'rgba(255,255,255,0.18)', 'font-size':'8', 'font-family':'Inter,sans-serif' });
+      t.textContent = v;
+      svg.appendChild(t);
+    }
+  });
+
+  // Axes + labels
+  ALL.forEach((d, i) => {
+    const [ex, ey] = pt(10, i, R);
+    svg.appendChild(mk('line', { x1:CX, y1:CY, x2:ex, y2:ey, stroke:'rgba(255,255,255,0.07)', 'stroke-width':'1' }));
+    const [lx, ly] = pt(10, i, R + 20);
+    const t = mk('text', { x:lx, y:ly, fill:d.color, 'font-size':'8.5', 'font-family':'Inter,sans-serif', 'font-weight':'500', 'text-anchor':'middle', 'dominant-baseline':'middle' });
+    t.textContent = d.short;
+    svg.appendChild(t);
+  });
+
+  // Effective polygon (dashed amber)
+  const effPts = ALL.map((d,i) => pt(eff[d.id], i, R).join(',')).join(' ');
+  svg.appendChild(mk('polygon', { points:effPts, fill:'rgba(251,191,36,0.06)', stroke:'rgba(251,191,36,0.5)', 'stroke-width':'1.5', 'stroke-dasharray':'5,3' }));
+
+  // Set value polygon (solid blue)
+  const setPts = ALL.map((d,i) => pt(vals[d.id], i, R).join(',')).join(' ');
+  svg.appendChild(mk('polygon', { points:setPts, fill:'rgba(91,138,240,0.12)', stroke:'#5B8AF0', 'stroke-width':'2' }));
+
+  // Dots
+  ALL.forEach((d, i) => {
+    const [px, py] = pt(vals[d.id], i, R);
+    svg.appendChild(mk('circle', { cx:px, cy:py, r:'3.5', fill:d.color }));
+  });
+}
+
+// ═══════════════════════════════════════════
+//  LOAD BAR
+// ═══════════════════════════════════════════
+function drawLoad(eff) {
+  const allVals = ALL.map(d => eff[d.id]);
+  const mean = allVals.reduce((a,b) => a+b, 0) / allVals.length;
+  const pct  = ((mean - 1) / 9) * 100;
+
+  const fill  = document.getElementById('loadFill');
+  const label = document.getElementById('loadLabel');
+
+  fill.style.width = pct + '%';
+
+  let txt, col;
+  if (mean < 3)        { txt = 'Gering';    col = '#22C55E'; }
+  else if (mean < 5.5) { txt = 'Mittel';    col = '#EAB308'; }
+  else if (mean < 7.5) { txt = 'Hoch';      col = '#F97316'; }
+  else                 { txt = 'Sehr hoch'; col = '#EF4444'; }
+
+  fill.style.background = col;
+  label.textContent = txt + ' (' + mean.toFixed(1) + ')';
+  label.style.color = col;
+}
+
+// ═══════════════════════════════════════════
+//  RESET
+// ═══════════════════════════════════════════
+function resetAll() {
+  ALL.forEach(d => {
+    vals[d.id] = 5;
+    document.getElementById('v-' + d.id).textContent = '5';
+    document.getElementById('fill-' + d.id).style.height = '44%';
+    document.getElementById('th-'   + d.id).style.bottom = '44%';
+    document.getElementById('delta-'+ d.id).classList.remove('visible');
+    document.getElementById('eff-'  + d.id).classList.remove('visible');
+    document.getElementById('col-'  + d.id).classList.remove('coupled');
+  });
+  update();
+}
+
+// ═══════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════
+update();
+</script>
+</body>
+</html>
